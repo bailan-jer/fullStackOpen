@@ -12,13 +12,14 @@ const Part = ({name, exercises}) => (
   </p>
 )
 
-const Total = (props) => <p>Number of exercises {props.total}</p>
+const Total = ({total}) => <p>Total of exercises {total}</p>
 
 const Course = ({course}) => {
   return (
     <div>
       <Header course = {course.name} />
       <Content parts = {course.parts} />
+      <b><Total total = {course.parts[0].exercises + course.parts[1].exercises + course.parts[2].exercises} /></b>
     </div>
   )
 }
