@@ -24,14 +24,18 @@ const PersonForm = ({handleAddPerson, newName, handleNameChange, newPhone, handl
   )
 }
 
-const Person = ({name, number}) => {
-  return <p>{name} {number}</p>
+const Person = ({name, number, id, handleDelete}) => {
+  return (
+          <p>
+            {name} {number} <button onClick = {() => handleDelete(id, name)}>Delete</button>
+          </p>
+  )
 }
 
-const Persons = ({persons, searchName}) => {
+const Persons = ({persons, searchName, handleDelete}) => {
   const personsToShow = persons.filter(person => person.name.toLowerCase().includes(searchName.toLowerCase()))
 
-  return personsToShow.map(person => <Person key = {person.name} {...person} />)
+  return personsToShow.map(person => <Person key = {person.name} handleDelete = {handleDelete} {...person} />)
 }
 
 const App = () => {
@@ -61,6 +65,15 @@ const App = () => {
   const handleSearchName = (event) => {
     setSearchName(event.target.value)
   }
+  const handleDelete = (id, name) => {
+    if (window.confirm(`Delete ${name} ?`)){
+      personsService.delete_(id).then(
+        deletedPerson => {
+          setPersons(persons.filter(person => person.id !== deletedPerson.id))
+        }
+      )
+    }
+  }
 
   useEffect(() => {
     personsService.getAll().then(initialPersons => setPersons(initialPersons))
@@ -73,7 +86,7 @@ const App = () => {
       <PersonForm handleAddPerson = {handleAddPerson} newName = {newName} handleNameChange = {handleNameChange}
                   newPhone = {newPhone} handlePhoneChange = {handlePhoneChange} />
       <h2>Numbers</h2>
-      <Persons persons = {persons} searchName = {searchName} />
+      <Persons persons = {persons} searchName = {searchName} handleDelete = {handleDelete}/>
     </div>
   )
 }
