@@ -1,4 +1,5 @@
 import { useState, useEffect} from 'react'
+import personsService from "./services/persons"
 import axios from "axios"
 
 const baseURL =  "http://localhost:3001/persons"
@@ -33,11 +34,6 @@ const Persons = ({persons, searchName}) => {
   return personsToShow.map(person => <Person key = {person.name} {...person} />)
 }
 
-const put = (newPersonObj) => {
-  // return data attribute in the response after giving an HTML PUT request
-  return axios.post(baseURL, newPersonObj).then(response => response.data)
-}
-
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
@@ -47,9 +43,9 @@ const App = () => {
   const handleAddPerson = (event) => {
     event.preventDefault()
     if (!persons.find(person => person.name === newName)){
-      put({name: newName, number: newPhone, id: persons.length + 1}).then(
-        returnedPerson => setPersons(persons.concat(returnedPerson))
-      )
+      personsService
+        .create({name: newName, number: newPhone, id: persons.length + 1})
+        .then(returnedPerson => setPersons(persons.concat(returnedPerson)))
     } else {
       alert(`${newName} is already added to phonebook`)
     }
@@ -67,15 +63,8 @@ const App = () => {
   }
 
   useEffect(() => {
-    // console.log("Effect")
-    axios
-      .get("http://localhost:3001/persons")
-      .then(response => {
-        // console.log("promise fulfilled")
-        setPersons(response.data)
-      })
+    personsService.getAll().then(initialPersons => setPersons(initialPersons))
   }, [])
-  // console.log("render", persons.length, " persons")
 
   return (
     <div>
