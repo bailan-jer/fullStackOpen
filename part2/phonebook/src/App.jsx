@@ -3,6 +3,8 @@ import personsService from "./services/persons"
 import Filter from "./components/Filter"
 import PersonForm from "./components/PersonForm"
 import Persons from "./components/Persons"
+import Notification from "./components/Notification"
+import "./index.css"
 
 const baseURL =  "http://localhost:3001/persons"
 
@@ -11,6 +13,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newPhone, setNewPhone] = useState("")
   const [searchName, setSearchName] = useState("")
+  const [message, setMessage] = useState(null)
 
   const handleAddPerson = (event) => {
     event.preventDefault()
@@ -18,14 +21,28 @@ const App = () => {
     if (!existingUser){
       personsService
         .create({name: newName, number: newPhone, id: persons.length + 1})
-        .then(returnedPerson => setPersons(persons.concat(returnedPerson)))
+        .then(
+          returnedPerson => {
+            setMessage(`Added ${returnedPerson.name}`)
+            setPersons(persons.concat(returnedPerson))
+            setTimeout(
+              () => setMessage(null),
+              5000
+            )
+          }
+        )
     } else {
       if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)){
         personsService
         .update(existingUser.id, {...existingUser, number: newPhone})
         .then(
           updatedPerson => {
+            setMessage(`Updated ${updatedPerson.name}`)
             setPersons(persons.map(person => person.id === updatedPerson.id ? updatedPerson : person))
+            setTimeout(
+              () => setMessage(null),
+              5000
+            )
           }
         )
       }
@@ -58,6 +75,7 @@ const App = () => {
 
   return (
     <div>
+      <Notification message = {message} />
       <Filter searchName = {searchName} handleSearchName = {handleSearchName} />
       <h2>Phonebook</h2>
       <PersonForm handleAddPerson = {handleAddPerson} newName = {newName} handleNameChange = {handleNameChange}
