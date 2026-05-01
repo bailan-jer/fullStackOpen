@@ -1,42 +1,10 @@
 import { useState, useEffect} from 'react'
 import personsService from "./services/persons"
-import axios from "axios"
+import Filter from "./components/Filter"
+import PersonForm from "./components/PersonForm"
+import Persons from "./components/Persons"
 
 const baseURL =  "http://localhost:3001/persons"
-
-const Filter = ({searchName, handleSearchName}) => {
-  return (
-    <div>
-      filter shown with <input value = {searchName} onChange = {handleSearchName} />
-    </div>
-  )
-}
-
-const PersonForm = ({handleAddPerson, newName, handleNameChange, newPhone, handlePhoneChange}) => {
-  return (
-    <div>
-      <form onSubmit = {handleAddPerson}>
-        Name: <input value = {newName} onChange = {handleNameChange} /><br />
-        Phone: <input value = {newPhone} onChange = {handlePhoneChange} /><br />
-        <input type = "submit" />
-      </form>
-    </div>
-  )
-}
-
-const Person = ({name, number, id, handleDelete}) => {
-  return (
-          <p>
-            {name} {number} <button onClick = {() => handleDelete(id, name)}>Delete</button>
-          </p>
-  )
-}
-
-const Persons = ({persons, searchName, handleDelete}) => {
-  const personsToShow = persons.filter(person => person.name.toLowerCase().includes(searchName.toLowerCase()))
-
-  return personsToShow.map(person => <Person key = {person.name} handleDelete = {handleDelete} {...person} />)
-}
 
 const App = () => {
   const [persons, setPersons] = useState([])
