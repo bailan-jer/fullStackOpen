@@ -1,10 +1,19 @@
 const Notification = ({message}) => {
-    if (message === null) {
+    if (message.content === null) {
         return null
     }
+    const messageStyle = {
+        color: message.isError ? "red" : "green",
+        background: "lightgrey",
+        fontSize: 20,
+        borderStyle: "solid",
+        borderRadius: 5,
+        padding: 10,
+        margiBottom: 10
+    }
     return (
-        <div className = "message">
-            {message}
+        <div style = {messageStyle}>
+            {message.content}
         </div>
     )
 }

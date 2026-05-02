@@ -13,7 +13,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newPhone, setNewPhone] = useState("")
   const [searchName, setSearchName] = useState("")
-  const [message, setMessage] = useState(null)
+  const [message, setMessage] = useState({content: null, isError: false})
 
   const handleAddPerson = (event) => {
     event.preventDefault()
@@ -23,10 +23,10 @@ const App = () => {
         .create({name: newName, number: newPhone, id: persons.length + 1})
         .then(
           returnedPerson => {
-            setMessage(`Added ${returnedPerson.name}`)
+            setMessage({content: `Added ${returnedPerson.name}`, isError: false})
             setPersons(persons.concat(returnedPerson))
             setTimeout(
-              () => setMessage(null),
+              () => setMessage({content: null, isError: false}),
               5000
             )
           }
@@ -37,12 +37,22 @@ const App = () => {
         .update(existingUser.id, {...existingUser, number: newPhone})
         .then(
           updatedPerson => {
-            setMessage(`Updated ${updatedPerson.name}`)
+            setMessage({content: `Updated ${updatedPerson.name}`, isError: false})
             setPersons(persons.map(person => person.id === updatedPerson.id ? updatedPerson : person))
             setTimeout(
-              () => setMessage(null),
+              () => setMessage({content: null, isError: false}),
               5000
             )
+          }
+        )
+        .catch(
+          (error) => {
+            setMessage({content: `Information of ${existingUser.name} has already been removed from the server`, isError: true})
+            setTimeout(
+             () => setMessage({content: null, isError: false}),
+             5000
+            )
+            setPersons(persons.filter(person => person.id !== existingUser.id))
           }
         )
       }
