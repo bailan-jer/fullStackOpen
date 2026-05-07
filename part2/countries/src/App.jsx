@@ -11,7 +11,7 @@ const App = () => {
     setSearchCountry(event.target.value)
   }
   
-  const props = {searchCountry, handleChange, allNames}
+  const props = {searchCountry, handleChange, allNames, setSearchCountry}
 
   useEffect(
     () => {

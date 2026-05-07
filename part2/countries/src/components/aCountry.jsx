@@ -1,11 +1,14 @@
 import service from "../services/Countries"
-import {useState} from "react"
+import {useState, useEffect} from "react"
 
 const getACountry = service.getACountry
 
 const ACountry = ({name}) => {
     const [oneCountry, setOneCountry] = useState({})
-    getACountry(name).then(response => setOneCountry(response))
+    useEffect(
+        () => {getACountry(name).then(response => setOneCountry(response))},
+        []
+    )
     if (Object.keys(oneCountry).length === 0){
         return null
     }

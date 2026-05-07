@@ -1,6 +1,7 @@
 import ACountry from "./aCountry"
+import MoreCountries from "./moreCountries"
 
-const Countries = ( {searchCountry, handleChange, allNames} ) => {
+const Countries = ( {searchCountry, handleChange, allNames, setSearchCountry} ) => {
 
     if (searchCountry.length == 0){
         return (
@@ -19,7 +20,7 @@ const Countries = ( {searchCountry, handleChange, allNames} ) => {
                 Find countries <input value = {searchCountry} onChange = {handleChange} />
             </form>
             {length == 1 ? <ACountry name = {countriesToShow[0]} /> :
-                length > 10 ? <p>Too many matches, specify another filter</p> : countriesToShow.map(country => <li key = {country}>{country}</li>)
+                length > 10 ? <p>Too many matches, specify another filter</p> : <MoreCountries countriesToShow = {countriesToShow} setSearchCountry = {setSearchCountry} />
             }
         </div>
     )
