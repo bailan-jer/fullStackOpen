@@ -1,5 +1,6 @@
 import service from "../services/Countries"
 import {useState, useEffect} from "react"
+import Weather from "./Weather"
 
 const getACountry = service.getACountry
 
@@ -22,6 +23,7 @@ const ACountry = ({name}) => {
                 {Object.values(oneCountry.languages).map(language => <li key = {language}>{language}</li>)}
             </ul>
             <img src = {oneCountry.flag} />
+            <Weather name = {name} />
         </div>
     )
 }

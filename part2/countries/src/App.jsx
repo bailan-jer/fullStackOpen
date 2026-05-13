@@ -18,7 +18,6 @@ const App = () => {
       getAllNames().then(
         names => {
           setAllNames(names)
-          console.log("Set allNames successfully")
         }
       )
     },
