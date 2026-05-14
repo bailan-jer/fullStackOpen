@@ -30,7 +30,7 @@ const App = () => {
   return (
     <div>
       Find countries <input value = {value} onChange = {event => {setValue(event.target.value)}}/>
-      <Countries matchingCountry = {matchingCountry} />
+      <Countries matchingCountry = {matchingCountry} setValue = {setValue} />
     </div>
   )
 }

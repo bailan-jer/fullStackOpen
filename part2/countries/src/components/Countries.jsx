@@ -1,8 +1,12 @@
-import Country from "./Country"
 import {useEffect, useState} from "react"
 import {getCountry} from "../services/countries"
 
-const Countries = ({matchingCountry}) => {
+const Countries = ({matchingCountry, setValue}) => {
+    const handleClick = (name) => {
+        event.preventDefault()
+        setValue(name)
+    }
+
     const [country, setCountry] = useState({})
     useEffect(
         () => {
@@ -37,7 +41,20 @@ const Countries = ({matchingCountry}) => {
     } else {
         return (
             <ul>
-                {matchingCountry.map(name => <li key = {name}>{name}</li>)}
+                {matchingCountry.map(
+                    name => (
+                        <li key = {name}>
+                            {name} 
+                            <input type = "button" value = "show" onClick = {
+                                (event) => {
+                                    event.preventDefault()
+                                    setValue(name)
+                                }
+                            }/>
+                        </li>
+                    )
+                )
+                }
             </ul>
         )
     }
