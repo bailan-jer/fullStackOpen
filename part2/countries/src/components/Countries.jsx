@@ -1,17 +1,19 @@
 import {useEffect, useState} from "react"
-import {getCountry} from "../services/countries"
+import {getCountry, getWeatherData} from "../services/countries"
 
 const Countries = ({matchingCountry, setValue}) => {
-    const handleClick = (name) => {
-        event.preventDefault()
-        setValue(name)
-    }
-
     const [country, setCountry] = useState({})
+    const [weather, setWeather] = useState({})
     useEffect(
         () => {
             if (matchingCountry.length === 1){
-                getCountry(matchingCountry[0]).then(country => setCountry(country))
+                getCountry(matchingCountry[0]).then(
+                    country => {
+                        setCountry(country)
+                        const {latlng} = country
+                        getWeatherData(latlng[0], latlng[1]).then(weather => setWeather(weather))
+                    }
+                )
                 // setTimeout(() => getCountry(matchingCountry[0]).then(country => setCountry(country)), 3000)
             }
         },
@@ -25,7 +27,16 @@ const Countries = ({matchingCountry, setValue}) => {
         if (Object.keys(country).length === 0){
             return null
         }
-        const {capital, area, languages, flags, name} = country
+        const {capital, area, languages, flags, name, latlng} = country
+        let weatherHTML = null
+        if (Object.keys(weather).length > 0){
+            weatherHTML = (
+                <div>
+                    <p>Temperature {weather.temperature} Celcius</p>
+                    <p>Wind {weather.speed} m/s</p>
+                </div>
+            )
+        }
         return (
             <div>
                 <h1>{name.common}</h1>
@@ -36,6 +47,8 @@ const Countries = ({matchingCountry, setValue}) => {
                     {Object.values(languages).map(language => <li key = {language}>{language}</li>)}
                 </ul>
                 <img src = {flags.png} />
+                <h2>Weather in {name.common}</h2>
+                {weatherHTML ? weatherHTML : null}
             </div>
         )
     } else {
