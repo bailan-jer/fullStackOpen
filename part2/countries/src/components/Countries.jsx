@@ -1,29 +1,46 @@
-import ACountry from "./aCountry"
-import MoreCountries from "./moreCountries"
+import Country from "./Country"
+import {useEffect, useState} from "react"
+import {getCountry} from "../services/countries"
 
-const Countries = ( {searchCountry, handleChange, allNames, setSearchCountry} ) => {
-
-    if (searchCountry.length == 0){
+const Countries = ({matchingCountry}) => {
+    const [country, setCountry] = useState({})
+    useEffect(
+        () => {
+            if (matchingCountry.length === 1){
+                getCountry(matchingCountry[0]).then(country => setCountry(country))
+                // setTimeout(() => getCountry(matchingCountry[0]).then(country => setCountry(country)), 3000)
+            }
+        },
+        [matchingCountry]
+    )
+    if (matchingCountry.length === 0){
+        return null
+    } else if (matchingCountry.length > 10){
+        return <p>Too many matches, specify another filter</p>
+    } else if (matchingCountry.length === 1){
+        if (Object.keys(country).length === 0){
+            return null
+        }
+        const {capital, area, languages, flags, name} = country
         return (
             <div>
-            <form>
-                Find countries <input value = {searchCountry} onChange = {handleChange} />
-            </form>
-        </div>
+                <h1>{name.common}</h1>
+                <p>Capital {capital}</p>
+                <p>Area {area}</p>
+                <h2>Languages</h2>
+                <ul>
+                    {Object.values(languages).map(language => <li key = {language}>{language}</li>)}
+                </ul>
+                <img src = {flags.png} />
+            </div>
+        )
+    } else {
+        return (
+            <ul>
+                {matchingCountry.map(name => <li key = {name}>{name}</li>)}
+            </ul>
         )
     }
-    const countriesToShow = allNames.filter(name => name.toLowerCase().includes(searchCountry.toLowerCase()))
-    const length = countriesToShow.length
-    return (
-        <div>
-            <form>
-                Find countries <input value = {searchCountry} onChange = {handleChange} />
-            </form>
-            {length == 1 ? <ACountry name = {countriesToShow[0]} /> :
-                length > 10 ? <p>Too many matches, specify another filter</p> : <MoreCountries countriesToShow = {countriesToShow} setSearchCountry = {setSearchCountry} />
-            }
-        </div>
-    )
 }
 
 export default Countries
