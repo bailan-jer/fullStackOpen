@@ -2,3 +2,5 @@ node_modules/
 AGENTS.md
 skills-lock.json
 */*/node_modules/
+*/*/*.rest
+.agents/
