@@ -1,5 +1,11 @@
 const express = require("express")
 const app = express()
+const UPPER_LIMIT = 1e10
+app.use(express.json())
+
+const generateID = () => {
+    return Math.floor(Math.random() * UPPER_LIMIT + 1)
+}
 
 let persons = [
     { 
@@ -49,6 +55,17 @@ app.delete("/api/persons/:id", (request, response) => {
     const id = request.params.id
     persons = persons.filter(person => person.id !== id)
     response.status(204).end()
+})
+
+app.post("/api/persons", (request, response) => {
+    const body = request.body
+    const person = {
+        id: String(generateID()),
+        name: body.name,
+        number: body.number
+    }
+    persons = persons.concat(person)
+    response.json(person)
 })
 
 const PORT = 3001
