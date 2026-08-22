@@ -1,7 +1,9 @@
 const express = require("express")
+const morgan = require("morgan")
 const app = express()
 const UPPER_LIMIT = 1e10
 app.use(express.json())
+app.use(morgan("tiny"))
 
 const generateID = () => {
     return Math.floor(Math.random() * UPPER_LIMIT + 1)
@@ -54,18 +56,27 @@ app.get("/api/persons/:id", (request, response) => {
 app.delete("/api/persons/:id", (request, response) => {
     const id = request.params.id
     persons = persons.filter(person => person.id !== id)
+    if (!person){
+        return response.status(404).json({error: "Person not found"})
+    }
     response.status(204).end()
 })
 
 app.post("/api/persons", (request, response) => {
     const body = request.body
+    if (!body.name.trim() || !body.number.trim()){
+        return response.status(400).json({error: `name or number is empty`})
+    }
+    if (persons.find(person => person.name === body.name)){
+        return response.status(400).json({error: "Name must be unique"})
+    }
     const person = {
         id: String(generateID()),
         name: body.name,
         number: body.number
     }
     persons = persons.concat(person)
-    response.json(person)
+    return response.json(person)
 })
 
 const PORT = 3001
