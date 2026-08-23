@@ -3,7 +3,17 @@ const morgan = require("morgan")
 const app = express()
 const UPPER_LIMIT = 1e10
 app.use(express.json())
-app.use(morgan("tiny"))
+morgan.token("body", (req, res) => {
+    if (req.method === "POST"){
+        if (res.body){
+            return JSON.stringify(res.body)
+        } else {
+            return "undefined"
+        }
+    } 
+    return " "
+})
+app.use(morgan(":method :url :status :res[content-length] - :response-time ms :body"))
 
 const generateID = () => {
     return Math.floor(Math.random() * UPPER_LIMIT + 1)
@@ -55,8 +65,9 @@ app.get("/api/persons/:id", (request, response) => {
 
 app.delete("/api/persons/:id", (request, response) => {
     const id = request.params.id
+    const oldLength = persons.length
     persons = persons.filter(person => person.id !== id)
-    if (!person){
+    if (oldLength !== persons.length){
         return response.status(404).json({error: "Person not found"})
     }
     response.status(204).end()
