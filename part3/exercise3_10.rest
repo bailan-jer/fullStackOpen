@@ -1,0 +1,10 @@
+GET https://fullstackopen-jpcf.onrender.com/api/persons
+
+###
+POST https://fullstackopen-jpcf.onrender.com/api/persons
+content-type: application/json
+
+{
+    "name": "soon hong",
+    "number": "123456789"
+}
