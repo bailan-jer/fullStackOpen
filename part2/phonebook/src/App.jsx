@@ -6,8 +6,6 @@ import Persons from "./components/Persons"
 import Notification from "./components/Notification"
 import "./index.css"
 
-const baseURL =  "http://localhost:3001/persons"
-
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
