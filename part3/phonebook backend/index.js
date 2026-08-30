@@ -1,5 +1,6 @@
 const express = require("express")
 const morgan = require("morgan")
+const Person = require("./models/phonebook")
 const app = express()
 const UPPER_LIMIT = 1e10
 app.use(express.json())
@@ -44,7 +45,7 @@ let persons = [
 ]
 
 app.get("/api/persons", (request, response) => {
-    response.json(persons)
+    Person.find({}).then(persons => response.json(persons))
 })
 
 app.get("/info", (request, response) => {
@@ -56,12 +57,7 @@ app.get("/info", (request, response) => {
 
 app.get("/api/persons/:id", (request, response) => {
     const id = request.params.id
-    const person = persons.find(person => person.id === id)
-    if (!person){
-        return response.status(404).end()
-    }else{
-        return response.json(person)
-    }
+    Person.findById(id).then(person => response.json(person))
 })
 
 app.delete("/api/persons/:id", (request, response) => {
