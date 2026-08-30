@@ -75,16 +75,11 @@ app.post("/api/persons", (request, response) => {
     if (!body.name.trim() || !body.number.trim()){
         return response.status(400).json({error: `name or number is empty`})
     }
-    if (persons.find(person => person.name === body.name)){
-        return response.status(400).json({error: "Name must be unique"})
-    }
-    const person = {
-        id: String(generateID()),
+    const person = new Person({
         name: body.name,
         number: body.number
-    }
-    persons = persons.concat(person)
-    return response.json(person)
+    })
+    person.save().then(result => response.json(result))
 })
 
 const PORT = 3001
