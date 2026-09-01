@@ -62,12 +62,17 @@ app.get("/api/persons/:id", (request, response) => {
 
 app.delete("/api/persons/:id", (request, response) => {
     const id = request.params.id
-    deletedPerson = persons.find(person => person.id === id)
-    persons = persons.filter(person => person.id !== id)
-    if (!deletedPerson){
-        return response.status(404).json({error: "Person not found"})
-    }
-    response.json(deletedPerson)
+    Person.findByIdAndDelete(id)
+        .then(deletedPerson => {
+            if (deletedPerson){
+                return response.json(deletedPerson)
+            }
+            return response.status(204).end()
+        })
+        .catch(error => {
+            console.log("Error: ", error.message)
+            response.status(400).end()
+        })
 })
 
 app.post("/api/persons", (request, response) => {
@@ -79,7 +84,13 @@ app.post("/api/persons", (request, response) => {
         name: body.name,
         number: body.number
     })
-    person.save().then(result => response.json(result))
+    person.save().then(savedPerson => {
+        response.json(savedPerson)
+    })
+})
+
+app.use((request, response) => {
+    response.status(404).send({error: "Invalid URL"})
 })
 
 const PORT = 3001
