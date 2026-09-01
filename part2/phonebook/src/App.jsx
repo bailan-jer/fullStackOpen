@@ -47,8 +47,8 @@ const App = () => {
           (error) => {
             setMessage({content: `Information of ${existingUser.name} has already been removed from the server`, isError: true})
             setTimeout(
-             () => setMessage({content: null, isError: false}),
-             5000
+              () => setMessage({content: null, isError: false}),
+              5000
             )
             setPersons(persons.filter(person => person.id !== existingUser.id))
           }
