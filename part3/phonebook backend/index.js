@@ -2,7 +2,6 @@ const express = require("express")
 const morgan = require("morgan")
 const Person = require("./models/phonebook")
 const app = express()
-const UPPER_LIMIT = 1e10
 app.use(express.json())
 morgan.token("body", (req, res) => {
     if (req.method === "POST"){
@@ -71,6 +70,23 @@ app.post("/api/persons", (request, response, next) => {
     person.save()
         .then(savedPerson => {
             response.json(savedPerson)
+        })
+        .catch(error => next(error))
+})
+
+app.put("/api/persons/:id", (request, response, next) => {
+    const {name, number} = request.body
+    if (!name.trim() || !number.trim()){
+        return response.status(400).json({error: "name or/and number is empty"})
+    }
+    Person.findById(request.params.id)
+        .then(person => {
+            if (!person){
+                return response.status(404).end()
+            }
+            person.name = name
+            person.number = number
+            person.save().then(updatedPerson => response.json(updatedPerson))
         })
         .catch(error => next(error))
 })
