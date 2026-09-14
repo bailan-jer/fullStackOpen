@@ -10,8 +10,8 @@
     "test": "echo \"Error no test script\" && exit 1",
     "start": "node index.js",
     "dev": "node --watch index.js",
-    "build:ui": "rm -rf dist && cd ../../part2/phonebook && npm run build && mkdir '../../part3/phonebook backend/dist' && cp -r dist '../../part3/phonebook backend'",
-    "build:full": "npm run build:ui && git add . && git commit -m \"$MSG\" && git push"
+    "build:ui": "rm -rf dist && cd ../../part2/phonebook && npm run build && cp -r dist '../../part3/phonebook backend'",
+    "build:full": "npm run build:ui && git add -A && git commit -m \"$MSG\" && git push"
   },
   "dependencies": {
     "express": "^5.2.1",
