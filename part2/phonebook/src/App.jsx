@@ -18,17 +18,18 @@ const App = () => {
     const existingUser = persons.find(person => person.name === newName)
     if (!existingUser){
       personsService
-        .create({name: newName, number: newPhone, id: persons.length + 1})
-        .then(
-          returnedPerson => {
-            setMessage({content: `Added ${returnedPerson.name}`, isError: false})
-            setPersons(persons.concat(returnedPerson))
-            setTimeout(
-              () => setMessage({content: null, isError: false}),
-              5000
-            )
-          }
-        )
+        .create({name: newName, number: newPhone})
+        .then(returnedPerson => {
+          setMessage({content: `Added ${returnedPerson.name}`, isError: false})
+          setPersons(persons.concat(returnedPerson))
+          setTimeout(() => setMessage({content: null, isError: false}), 5000)
+        })
+        .catch(error => {
+          setMessage({content: error.response.data.error, isError: true})
+          setTimeout(() => {
+            setMessage({content: null, isError: false})
+          }, 5000)
+        })
     } else {
       if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)){
         personsService

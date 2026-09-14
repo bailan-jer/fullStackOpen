@@ -13,7 +13,11 @@ mongoose.connect(url, {family: 4})
     console.log("error connecting to mongodb", error.message)
 })
 const personSchema = new mongoose.Schema({
-    name: String,
+    name: {
+        type: String,
+        required: true,
+        minLength: 3
+    },
     number: String
 })
 personSchema.set("toJSON", {
