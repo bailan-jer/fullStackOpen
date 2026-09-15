@@ -16,9 +16,19 @@ const personSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        minLength: 3
+        minLength: [3, "Name must be of at least three"]
     },
-    number: String
+    number: {
+        type: String,
+        required: true,
+        minLength: [8, "Phone must be of at least eight"],
+        validate: {
+            validator: (v) => {
+                return /\d{2,3}-\d{5,}/.test(v)
+            },
+            message: "Invalid phone format"
+        }
+    }
 })
 personSchema.set("toJSON", {
     transform: (document, returnedObject) => {
