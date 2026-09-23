@@ -1,0 +1,18 @@
+{
+  "name": "blog",
+  "version": "0.0.1",
+  "description": "Part 4",
+  "license": "ISC",
+  "author": "soon hong",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js --watch",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.3",
+    "express": "^5.2.1",
+    "mongoose": "^9.10.2"
+  }
+}
