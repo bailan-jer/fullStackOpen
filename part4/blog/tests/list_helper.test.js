@@ -1,16 +1,7 @@
 const { test, describe } = require("node:test")
 const assert = require("node:assert")
 const listHelper = require("../utils/list_helper")
-
-test("dummy returns one", () => {
-	const blogs = []
-
-	const result = listHelper.dummy(blogs)
-	assert.strictEqual(result, 1)
-})
-
-describe("total likes", () => {
-	const blogs = [
+const blogs = [
     {
     _id: "5a422a851b54a676234d17f7",
     title: "React patterns",
@@ -60,6 +51,15 @@ describe("total likes", () => {
     __v: 0
     }  
 ]
+
+test("dummy returns one", () => {
+	const blogs = []
+
+	const result = listHelper.dummy(blogs)
+	assert.strictEqual(result, 1)
+})
+
+describe("total likes", () => {
 	test("of an empty list is zero", () => {
 		assert.strictEqual(listHelper.totalLikes([]), 0)
 	})
@@ -72,5 +72,19 @@ describe("total likes", () => {
 	test("of a bigger list is calculated right", () => {
 		const result = listHelper.totalLikes(blogs)
 		assert.strictEqual(result, 36)
+	})
+})
+
+describe("Favourite Blog", () => {
+	test("of an empty list is null", () => {
+		assert.deepStrictEqual(listHelper.favouriteBlog([]), null)
+	})
+
+	test("when list only has one blog equals that blog", () => {
+		assert.deepStrictEqual(listHelper.favouriteBlog([blogs[0]]), blogs[0])
+	})
+
+	test("of a bigger list is the blog with highest likes", () => {
+		assert.deepStrictEqual(listHelper.favouriteBlog(blogs), blogs[2])
 	})
 })
