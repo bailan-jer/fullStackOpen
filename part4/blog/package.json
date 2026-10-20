@@ -9,11 +9,12 @@
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
-	"test": "node --test"
+    "test": "node --test"
   },
   "dependencies": {
     "dotenv": "^18.0.3",
     "express": "^5.2.1",
+    "lodash": "^4.18.1",
     "mongoose": "^9.10.2"
   }
 }
