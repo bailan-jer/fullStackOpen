@@ -1,11 +1,9 @@
 const blogsRouter = require("express").Router()
 const Blog = require("../models/blog")
 
-blogsRouter.get("/", (request, response) => {
-    Blog.find({})
-        .then(blogs => {
-            return response.json(blogs)
-        })
+blogsRouter.get("/", async (request, response) => {
+    const notes = await Blog.find({}) 
+    return response.json(notes)
 })
 
 blogsRouter.post("/", (request, response) => {
