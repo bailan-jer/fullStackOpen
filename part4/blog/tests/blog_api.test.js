@@ -35,6 +35,25 @@ test("Unique identifier property of blog post is 'id' and '_id' is deleted", asy
     assert(blogs.map(blog => !("_id" in blog)))
 })
 
+test("a valid blog is added", async () => {
+    const newBlog = {
+        title: "bailan jer",
+        author: "bailan baler",
+        url: "http://test",
+        likes: 10,
+    }
+
+    await api
+        .post("/api/blogs")
+        .send(newBlog)
+        .expect(201)
+        .expect("Content-Type", /application\/json/)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
+    assert(_.some(blogsAtEnd, newBlog))
+})
+
 after(async () => {
     await mongoose.connection.close()
 })
