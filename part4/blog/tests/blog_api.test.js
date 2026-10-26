@@ -5,6 +5,7 @@ const supertest = require("supertest")
 const helper = require("./test_helper")
 const Blog = require("../models/blog")
 const mongoose = require("mongoose")
+const _ = require("lodash")
 
 const api = supertest(app)
 
@@ -20,6 +21,18 @@ test("All blogs are returned and as JSON", async () => {
         .expect("Content-Type", /application\/json/)
 
     assert.strictEqual(response.body.length, helper.initialBlogs.length)
+})
+
+test("Unique identifier property of blog post is 'id' and '_id' is deleted", async () => {
+    // const blogs = (await helper.blogsInDb()).map(blog => blog.toJSON())
+    const blogs = (await api.get("/api/blogs")).body
+
+    // check all id's are unique
+    const ids = _.countBy(blogs, blog => blog.id)
+    assert(_.every(Object.values(ids), count => count === 1))
+
+    // check _id's are deleted from blogs object
+    assert(blogs.map(blog => !("_id" in blog)))
 })
 
 after(async () => {

@@ -1,4 +1,4 @@
-const Note = require("../models/blog")
+const Blog = require("../models/blog")
 
 const initialBlogs = [
     {
@@ -51,6 +51,11 @@ const initialBlogs = [
     }  
 ]
 
+const blogsInDb = async () => {
+    return await Blog.find({}) 
+}
+
 module.exports = {
     initialBlogs,
+    blogsInDb,
 }
