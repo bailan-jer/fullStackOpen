@@ -37,7 +37,7 @@ test("Unique identifier property of blog post is 'id' and '_id' is deleted", asy
 
 test("a valid blog is added", async () => {
     const newBlog = {
-        title: "bailan jer",
+        title: "a valid blog is added",
         author: "bailan baler",
         url: "http://test",
         likes: 10,
@@ -52,6 +52,24 @@ test("a valid blog is added", async () => {
     const blogsAtEnd = await helper.blogsInDb()
     assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
     assert(_.some(blogsAtEnd, newBlog))
+})
+
+test("'Likes' default to 0 when ommited from request", async () => {
+    const newBlog = {
+        title: "'Likes' default to 0 when ommited from request",
+        author: "bailan jer",
+        url: "http://test", 
+    }
+
+    const { id } = (await api
+        .post("/api/blogs")
+        .send(newBlog)
+        .expect(201)
+        .expect("Content-Type", /application\/json/)
+    ).body
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert(_.find(blogsAtEnd, { id }).likes === 0)
 })
 
 after(async () => {
