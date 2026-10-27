@@ -72,6 +72,38 @@ test("'Likes' default to 0 when ommited from request", async () => {
     assert(_.find(blogsAtEnd, { id }).likes === 0)
 })
 
+test("Missing 'title' or 'url' properties returns error 400", async () => {
+    const missingTitle = {
+        author: "bailan jer",
+        url: "http://test",
+    }
+    const missingUrl = {
+        title: "missing url",
+        author: "bailan jer",
+    }
+    const missingTitleAndUrl = {
+        author: "bailan jer"
+    }
+
+    await api
+        .post("/api/blogs")
+        .send(missingTitle)
+        .expect(400)
+
+    await api
+        .post("/api/blogs")
+        .send(missingUrl)
+        .expect(400)
+
+    await api
+        .post("/api/blogs")
+        .send(missingTitleAndUrl)
+        .expect(400)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+})
+
 after(async () => {
     await mongoose.connection.close()
 })
