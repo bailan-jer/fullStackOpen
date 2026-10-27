@@ -108,16 +108,33 @@ describe("when there is initially some blogs saved", () => {
     })
 
     describe("deletion of a blog", () => {
-        test("succeeds if with status code 204 if id is valid",  async () => {
+        test("succeeds with status code 204 if id is valid",  async () => {
             const blogsAtStart = await helper.blogsInDb()
             const blogToDelete = blogsAtStart[0]
 
-            console.log(blogToDelete.id)
             await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
             const blogsAtEnd = await helper.blogsInDb()
             assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
 
             assert.strictEqual(await Blog.findById(blogToDelete.id), null)
+        })
+
+        test("fails with status code 404 if id does not exist", async () => {
+            await api.delete(`/api/blogs/${helper.nonExistingId()}`).expect(404)
+        })
+    })
+
+    describe("updating of a blog", () => {
+        test("succeeds with status code 200 if id is valid", async () => {
+            const noteAtStart = await helper.blogsInDb()
+            const noteToUpdate = noteAtStart[0]
+            const newBlog = { ...noteToUpdate, title: "testing of update"}
+
+            await api.put(`/api/blogs/${newBlog.id}`).send(newBlog).expect(200).expect("Content-Type", /application\/json/)
+        
+            const blogsAtEnd = await helper.blogsInDb()
+            const updatedBlog = _.find(blogsAtEnd, blog => blog.id === newBlog.id)
+            assert.deepStrictEqual(updatedBlog, newBlog)
         })
     })
 })
