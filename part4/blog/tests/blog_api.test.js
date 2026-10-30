@@ -4,6 +4,7 @@ const app = require("../app")
 const supertest = require("supertest")
 const helper = require("./test_helper")
 const Blog = require("../models/blog")
+const User = require("../models/user")
 const mongoose = require("mongoose")
 const _ = require("lodash")
 
@@ -136,6 +137,29 @@ describe("when there is initially some blogs saved", () => {
             const updatedBlog = _.find(blogsAtEnd, blog => blog.id === newBlog.id)
             assert.deepStrictEqual(updatedBlog, newBlog)
         })
+    })
+})
+
+describe("when there is initially a user in the database", () => {
+    beforeEach(async () => {
+        await User.deleteMany({})
+    })
+
+    test("POST request to `/api/users` creates new user", async () => {
+        const newUser = {
+            username: "testing",
+            name: "bailan jer",
+            password: "123456",
+        }
+
+        const response = await api.post("/api/users").send(newUser)
+        helper.responseChecker(response, 201)
+        const usersAtEnd = await helper.usersInDb()
+        assert(usersAtEnd.filter(u => u.username === newUser.username))
+
+        // Check password hash not returned
+        console.log(response)
+        assert(!Object.hasOwn(response.body, "passwordHash"))
     })
 })
 

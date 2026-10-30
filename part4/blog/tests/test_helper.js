@@ -1,4 +1,5 @@
 const Blog = require("../models/blog")
+const User = require("../models/user")
 
 const initialBlogs = [
     {
@@ -56,6 +57,11 @@ const blogsInDb = async () => {
     return blogs.map(blog => blog.toJSON())
 }
 
+const usersInDb = async () => {
+    const users = await User.find({})
+    return users.map(u => u.toJSON())
+}
+
 const nonExistingId = () => {
     const blog = new Blog({
         title: "for delete",
@@ -64,8 +70,17 @@ const nonExistingId = () => {
     return blog.id
 }
 
+const responseChecker = (response, expectedCode) => {
+    if (response.status !== expectedCode) {
+        console.error(`Expected ${expectedCode}, got ${response.status}`)
+        console.error(response.body)
+    } 
+}
+
 module.exports = {
     initialBlogs,
     blogsInDb,
-    nonExistingId
+    nonExistingId,
+    usersInDb,
+    responseChecker,
 }
