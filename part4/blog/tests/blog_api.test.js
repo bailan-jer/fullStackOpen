@@ -143,23 +143,91 @@ describe("when there is initially some blogs saved", () => {
 describe("when there is initially a user in the database", () => {
     beforeEach(async () => {
         await User.deleteMany({})
+        const newUser = new User({
+            username: "test",
+            user: "test",
+            password: "test",
+        })
+        await newUser.save()
     })
 
     test("POST request to `/api/users` creates new user", async () => {
         const newUser = {
-            username: "testing",
+            username: "testing1",
             name: "bailan jer",
             password: "123456",
         }
 
         const response = await api.post("/api/users").send(newUser)
-        helper.responseChecker(response, 201)
+        const expectedStatus = 201
+        assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\n${response.body}`)
         const usersAtEnd = await helper.usersInDb()
         assert(usersAtEnd.filter(u => u.username === newUser.username))
 
-        // Check password hash not returned
-        console.log(response)
         assert(!Object.hasOwn(response.body, "passwordHash"))
+    })
+
+    describe("creation of a new user", async () => {
+        test("success with status code 201 when `username` and `password` are supplied, both are 3 letters long and `username` is unique", async () => {
+            const usersAtStart = await helper.usersInDb()
+            const user = {
+                username: "testing2",
+                name: "bailan jer",
+                password: "123456",
+            }
+
+            const response = await api.post("/api/users").send(user)
+            const expectedStatus = 201
+            assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\n${response.body}`)
+            const  usersAtEnd = await helper.usersInDb()
+            assert.strictEqual(usersAtEnd.length, usersAtStart.length + 1)
+        })
+
+        test("failed with status code 400 when `username` length is < 3", async () => {
+            const usersAtStart = await helper.usersInDb()
+            const invalidUser = {
+                username: "ab",
+                name: "bailan",
+                password: "123456",
+            }
+
+            const response = await api.post("/api/users").send(invalidUser)
+            const expectedStatus = 400
+            assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\n${response.body}`)
+            const usersAtEnd = await helper.usersInDb()
+            assert(usersAtStart.length === usersAtEnd.length)
+        })
+
+        test("failed with status code 400 when `password` length is < 3", async() => {
+            const usersAtStart = await helper.usersInDb()
+            const invalidUser = {
+                username: "valid username",
+                name: "bailan jer",
+                password: "12",
+            }
+
+            const response = await api.post("/api/users").send(invalidUser)
+            const expectedStatus = 400
+            assert.strictEqual(response.status, 400, `Expected ${expectedStatus},got ${response.status}\n${response.body}`)
+            const usersAtEnd = await helper.usersInDb()
+            assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+            assert(Object.hasOwn(response.body, "error") && response.body.error.includes("password invalid"))
+        })
+
+        test("failed with status code 400 when `username` is not unique", async () => {
+            const usersAtStart = await helper.usersInDb()
+            const invalidUser = {
+                username: "test",
+                name: "test",
+                password: "1234",
+            }
+            const response = await api.post("/api/users").send(invalidUser)
+            const expectedStatus = 400
+            assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\nbody: ${JSON.stringify(response.body)}`)
+            const usersAtEnd = await helper.usersInDb()
+            assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+            assert(response.body.error.includes("`username` is expected to be unique"))
+        })
     })
 })
 

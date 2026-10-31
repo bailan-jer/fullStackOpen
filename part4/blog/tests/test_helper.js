@@ -59,7 +59,8 @@ const blogsInDb = async () => {
 
 const usersInDb = async () => {
     const users = await User.find({})
-    return users.map(u => u.toJSON())
+    const mappedUser = users.map(u => u.toJSON())
+    return mappedUser
 }
 
 const nonExistingId = () => {
@@ -70,17 +71,9 @@ const nonExistingId = () => {
     return blog.id
 }
 
-const responseChecker = (response, expectedCode) => {
-    if (response.status !== expectedCode) {
-        console.error(`Expected ${expectedCode}, got ${response.status}`)
-        console.error(response.body)
-    } 
-}
-
 module.exports = {
     initialBlogs,
     blogsInDb,
     nonExistingId,
     usersInDb,
-    responseChecker,
 }
