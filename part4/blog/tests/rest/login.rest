@@ -1,0 +1,20 @@
+# Valid login request
+POST http://localhost:3001/api/login
+content-type: application/json
+
+{
+    "username": "mlukkai",
+    "name": "Matti Luukkainen",
+    "password": "123456"
+}
+
+# Invalid Login Credential
+###
+POST http://localhost:3001/api/login
+content-type: application/json
+
+{
+    "username": "bailan",
+    "name": "bailan",
+    "password": "1425363"
+}

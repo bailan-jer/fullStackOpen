@@ -7,6 +7,7 @@ const Blog = require("../models/blog")
 const User = require("../models/user")
 const mongoose = require("mongoose")
 const _ = require("lodash")
+const bcrypt = require("bcrypt")
 
 const api = supertest(app)
 
@@ -142,11 +143,15 @@ describe("when there is initially some blogs saved", () => {
 
 describe("when there is initially a user in the database", () => {
     beforeEach(async () => {
+        await Blog.deleteMany({})
         await User.deleteMany({})
+        const password = "test"
+        const hashRounds = 10
+        const passwordHash = await bcrypt.hash(password, hashRounds)
         const newUser = new User({
             username: "test",
-            user: "test",
-            password: "test",
+            name: "test",
+            passwordHash,
         })
         await newUser.save()
     })
@@ -227,6 +232,45 @@ describe("when there is initially a user in the database", () => {
             const usersAtEnd = await helper.usersInDb()
             assert.strictEqual(usersAtEnd.length, usersAtStart.length)
             assert(response.body.error.includes("`username` is expected to be unique"))
+        })
+    })
+
+    describe("population of", () => {
+        test("`user` field of blog with the corresponding user succeeds", async () => {
+            const onlyUser = (await helper.usersInDb())[0]
+            const blog = {
+                title: "Things I Don't Know as of 2018",
+                url: "https://overreacted.io/things-i-dont-know-as-off-2018",
+                author: "Dan Abramov",
+            }
+            const response = await api.post("/api/blogs").send(blog)
+            const expectedStatus = 201
+            assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\n${response.body}`)
+            assert.strictEqual(response.body.user, onlyUser.id)
+
+            const getResponse = await api.get(`/api/blogs/${response.body.id}`)
+            const expectedUserObj = (await User.findById(response.body.user)).toJSON()
+            delete expectedUserObj.blogs
+            assert.deepStrictEqual(getResponse.body.user, expectedUserObj) })
+
+        test("`blogs` field of user with blogs created by the user succeeds", async () => {
+            const onlyUser = (await helper.usersInDb())[0]
+            const blog = {
+                url: "https://martinfowler.com/articles/distributed-objects-microservices.html",
+                title: "Microservices and the First Law of Distributed Object",
+                author: "Martin Fowler",
+            }
+            const response = await api.post("/api/blogs").send(blog)
+            const expectedStatus = 201
+            assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\n${response.body}`)
+            assert.strictEqual(response.body.user, onlyUser.id)
+
+            const getOnlyUserFromApi = await api.get(`/api/users/${response.body.user}`)
+            const blogsIds = getOnlyUserFromApi.body.blogs.map(b => b.id)
+
+            let blogs = await Blog.find({ user: response.body.user}, { _id: 1 })
+            blogs = blogs.map(b => b._id.toString())
+            assert(_.difference(blogs, blogsIds).length === 0)
         })
     })
 })
