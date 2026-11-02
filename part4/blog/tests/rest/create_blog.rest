@@ -1,6 +1,6 @@
 POST http://localhost:3001/api/blogs
 content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1sdWtrYWkiLCJpZCI6IjZhZTg1YzYzOGQ5YWRkM2YyYzc2YjcxOCIsImlhdCI6MTc5MzYyNjE2OH0.xH-LVTdUzYGWwrPpO--ncLnUNWWGc9U8JYJfYie7u9Q
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1sdWtrYWkiLCJpZCI6IjZhZTg1YzYzOGQ5YWRkM2YyYzc2YjcxOCIsImlhdCI6MTc5MzYyOTcwMH0.AcFK9iOlC7dmv2Y7fcChPB3GFHQCdTEC0FgV_c0MtMA
 
 {
     "title": "Go To Statement Considered Harmful",
@@ -13,10 +13,24 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1sd
 ###
 POST http://localhost:3001/api/blogs
 content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1sdWtrYWkiLCJpZCI6IjZhZTg1YzYzOGQ5YWRkM2YyYzc2YjcxOCIsImlhdCI6MTc5MzYyOTcwMH0.AcFK9iOlC7dmv2Y7fcChPB3GFHQCdTEC0FgV_c0MtMA
 
 {
     "title": "React patterns",
     "author": "Michael Chan",
     "url": "https://reactpatterns.com/",
     "likes": 7
+}
+
+# Create post for user `bailan jer`
+###
+POST http://localhost:3001/api/blogs
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhaWxhbiBqZXIiLCJpZCI6IjZhZTk3OWVjOTIzYmI0Yjk5N2IzYTdlMSIsImlhdCI6MTc5MzY4NjY4Nn0.inXO1QWBJSbaNIAvQqQPIfo7npfLpIgzIgMKXEt8ztY
+
+{
+    "title": "Canonical string reduction",
+    "author": "Edsger W. Dijkstra",
+    "url": "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
+    "likes": 12
 }

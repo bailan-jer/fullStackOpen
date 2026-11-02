@@ -4,7 +4,16 @@ content-type: application/json
 
 {
     "username": "mlukkai",
-    "name": "Matti Luukkainen",
+    "password": "123456"
+}
+
+# Try login to another acc
+###
+POST http://localhost:3001/api/login
+content-type: application/json
+
+{
+    "username": "bailan jer",
     "password": "123456"
 }
 

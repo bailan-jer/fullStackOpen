@@ -26,7 +26,7 @@ blogsRouter.post("/", async (request, response) => {
     if (!request.body.url || !request.body.title) {
         return response.status(400).end()
     }
-    const token = getTokenFrom(request)
+    const token = request.token
     if (!token) {
         return response.status(401).json({ error: "Missing token"})
     }
