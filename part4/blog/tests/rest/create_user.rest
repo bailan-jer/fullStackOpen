@@ -6,3 +6,14 @@ content-type: application/json
     "name": "Matti Luukkainen",
     "password": "123456"
 }
+
+# Create invalid user
+###
+POST http://localhost:3001/api/users
+content-type: application/json
+
+{
+    "username": "b",
+    "name": "bailan",
+    "password": "12"
+}
