@@ -1,5 +1,7 @@
 const Blog = require("../models/blog")
 const User = require("../models/user")
+const saltRounds = 10
+const bcrypt = require("bcrypt")
 
 const initialBlogs = [
     {
@@ -52,6 +54,21 @@ const initialBlogs = [
     }  
 ]
 
+const initialUsers = [
+    {
+        "username": "mlukkai",
+        "name": "Matti Luukkainen",
+        "password": "123456",
+        "passwordHash": bcrypt.hashSync("123456", saltRounds)
+    },
+    {
+        "username": "bailan jer",
+        "name": "wong hong",
+        "password": "741963",
+        "password": bcrypt.hashSync("741963", saltRounds)
+    },
+]
+
 const blogsInDb = async () => {
     const blogs = await Blog.find({}) 
     return blogs.map(blog => blog.toJSON())
@@ -68,12 +85,40 @@ const nonExistingId = () => {
         title: "for delete",
         url: "http://delete",
     })
-    return blog.id
+    return blog._id
+}
+
+const getOrCreateUser = async (user) => {
+    user = await User.findOneAndUpdate({ username: user.username }, user,
+        {
+            upsert: true,
+            returnDocument: "after",
+            setsDefaultOnInsert: true
+        }
+    )
+    return user
+}
+
+const getOrCreateBlog = async (user, blog) => {
+    try {
+        user = await getOrCreateUser(user)
+        blog = new Blog({ ...blog, user: user._id })
+        await blog.save()
+        user.blogs = user.blogs.concat(blog._id)
+        await user.save()
+        return blog
+    } catch(err) {
+        console.log(err)
+        console.error("Error while creating user and/or blog")
+    }
 }
 
 module.exports = {
     initialBlogs,
+    initialUsers,
     blogsInDb,
     nonExistingId,
     usersInDb,
+    getOrCreateUser,
+    getOrCreateBlog,
 }

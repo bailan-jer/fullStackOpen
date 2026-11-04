@@ -52,11 +52,34 @@ blogsRouter.post("/", async (request, response) => {
 })
 
 blogsRouter.delete("/:id", async (request, response) => {
-    const deletedBlog = await Blog.findByIdAndDelete(request.params.id)
-    if (deletedBlog) {
-        return response.status(204).end()
+    const blogToDeleteId = request.params.id
+    const token = request.token
+    if (!token) {
+        return response.status(401).json({ error: "Token required" })
     }
-    return response.status(404).end()
+    const decodedToken = jwt.verify(token, config.SECRET)
+    if (!decodedToken.id) {
+        return response.status(401).json({ error: "Invalid token" })
+    }
+    const userId = decodedToken.id
+    const user = await User.findById(userId)
+    if (!user) {
+        return response.status(401).json({ error: "Missing userId or userId invalid"})
+    }
+
+    const blogToDelete = await Blog.findById(blogToDeleteId)
+    if (!blogToDelete) {
+        return response.status(404).end()
+    }
+    if (blogToDelete.user.toString() === userId.toString()) {
+        user.blogs = user.blogs.filter(id => id.toString() !== blogToDeleteId)
+        await user.save()
+        const deleteSuccess = await blogToDelete.deleteOne()
+        if (deleteSuccess) {
+            return response.status(204).end()
+        }
+    }
+    return response.status(401).json({ error: "Not author of this blog" })
 })
 
 blogsRouter.put("/:id", async (request, response) => {

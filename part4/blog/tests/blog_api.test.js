@@ -275,6 +275,66 @@ describe("when there is initially a user in the database", () => {
     })
 })
 
+describe("Deletion of a blog", () => {
+    beforeEach(async () => {
+        await User.deleteMany({})
+        await Blog.deleteMany({})
+        const { password: password1, ...user1 } = helper.initialUsers[0]
+        const { password: password2, ...user2 } = helper.initialUsers[1]
+
+        const createBlogs = async (user, blogs) => {
+            for (const blog of blogs) {
+                await helper.getOrCreateBlog(user, blog)
+            }
+        }
+        const h = helper.initialBlogs
+        await Promise.all([createBlogs(user1, [h[0], h[1], h[2]]), createBlogs(user2, [h[3], h[4], h[5]])])
+    })
+
+    test("fails when token is not provided", async () => {
+        const oneRandomBlog = (await helper.blogsInDb())[0]
+        const response = await api.delete(`/api/blogs/${oneRandomBlog.id}`)
+        const expectedStatus = 401
+        assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\n${JSON.stringify(response.body)}`)
+
+        assert(response.body["error"].includes("Token required"))
+    })
+
+    test("fails with status 404 when the id does not exist and token is provided", async () => {
+        const nonExistingId = helper.nonExistingId()        
+        const { name, passwordHash, ...user } = helper.initialUsers[0]
+        const token = (await api.post("/api/login").send(user)).body.token
+        const response = await api.delete(`/api/blogs/${nonExistingId}`).set("Authorization", `Bearer ${token}`)
+        const expectedStatus = 404
+        assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\n${JSON.stringify(response.body)}`)
+    })
+
+    test("fails with status 401 when token is valid but not the creator of that blog", async () => {
+        const { passwordHash, name, ...user1} = helper.initialUsers[0]
+
+        const token = (await api.post("/api/login").send(user1)).body.token
+        const blogId = (await Blog.findOne(helper.initialBlogs.at(-1)))._id
+        const response = (await api.delete(`/api/blogs/${blogId}`).set("Authorization", `Bearer ${token}`))
+        const expectedStatus = 401
+        assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\n${JSON.stringify(response.body)}`)
+        assert(response.body.error.includes("Not author of this blog"))
+    })
+
+    test("succeeds with status code 204 when token is valid and is the creator of blog", async () => {
+        const numBlogsAtStart = (await helper.blogsInDb()).length
+        const {passwordHash, name, ...user} = helper.initialUsers[0]
+
+        const token = (await api.post("/api/login").send(user)).body.token
+        const blogId = (await Blog.findOne(helper.initialBlogs[0]))._id
+        const response = await api.delete(`/api/blogs/${blogId}`).set("Authorization", `Bearer ${token}`)
+        const expectedStatus = 204
+        assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\n${response.body}`)
+
+        const numBlogsAtEnd = (await helper.blogsInDb()).length
+        assert.strictEqual(numBlogsAtEnd, numBlogsAtStart - 1)
+    })
+})
+
 after(async () => {
     await mongoose.connection.close()
 })
