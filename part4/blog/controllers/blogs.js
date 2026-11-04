@@ -63,15 +63,26 @@ blogsRouter.delete("/:id", userExtractor, async (request, response) => {
     return response.status(401).json({ error: "Not author of this blog" })
 })
 
-blogsRouter.put("/:id", async (request, response) => {
+blogsRouter.put("/:id", userExtractor, async (request, response) => {
     if (!request.body.title || !request.body.url) {
-        return response.status(400).end()
+        return response.status(400).json({ error: "Missing title or url" })
     }
-    const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, request.body)
-    if (updatedBlog) {
-        return response.status(200).json(updatedBlog)
+
+    const blogId = request.params.id
+    const blog = await Blog.findById(blogId)
+    if (!blog) {
+        return response.status(404).json({ error: "Blog not found" })
     }
-    return response.status(404).end()
+    const creatorId = blog.user.toString()
+    const requestUser = request.user
+    if (!requestUser) {
+        return response.status(401).json({ error: "Token invalid" })
+    }
+    if (creatorId != requestUser._id.toString()) {
+        return response.status(401).json({ error: "Not author of this blog" })
+    }
+    const updatedBlog = await Blog.findByIdAndUpdate(blogId, request.body, { returnDocument: "after", })
+    return response.status(200).json(updatedBlog)
 })
 
 module.exports = blogsRouter

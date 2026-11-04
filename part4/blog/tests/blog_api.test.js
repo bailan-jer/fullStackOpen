@@ -78,20 +78,7 @@ describe("when there is initially some blogs saved", () => {
         assert(_.find(blogsAtEnd, { id }).likes === 0)
     })
 
-    describe("updating of a blog", () => {
-        test("succeeds with status code 200 if id is valid", async () => {
-            const noteAtStart = await helper.blogsInDb()
-            const noteToUpdate = noteAtStart[0]
-            const newBlog = { ...noteToUpdate, title: "testing of update"}
-
-            await api.put(`/api/blogs/${newBlog.id}`).send(newBlog).expect(200).expect("Content-Type", /application\/json/)
-        
-            const blogsAtEnd = await helper.blogsInDb()
-            const updatedBlog = _.find(blogsAtEnd, blog => blog.id === newBlog.id)
-            assert.deepStrictEqual(updatedBlog, newBlog)
-        })
     })
-})
 
 describe("when there is initially a user in the database", () => {
     beforeEach(async () => {
@@ -331,6 +318,34 @@ describe("addition of a new blog", () => {
         assert(response.body.error.includes("Missing token"))
     })
 })
+
+describe("updating of a blog", () => {
+    beforeEach(async () => {
+        await initializeDb()
+    })
+    test("succeeds with status code 200 if id is valid", async () => {
+        const blogToUpdateId = helper.initialBlogs[0]._id
+        const blogToUpdate = await Blog.findById(blogToUpdateId).lean()
+        const token = await getTestingToken()
+        const newBlog = { ...blogToUpdate, title: "testing of update"}
+
+        await api
+            .put(`/api/blogs/${newBlog._id.toString()}`)
+            .send(newBlog)
+            .set("Authorization", `Bearer ${token}`)
+            .expect(200)
+            .expect("Content-Type", /application\/json/)
+        const updatedBlog = await Blog.findById(blogToUpdate._id).lean()
+        assert.deepStrictEqual(updatedBlog, newBlog)
+        })
+
+    test("fails with status code 401 if token not provided", async () => {
+        const blogToUpdateId = helper.initialBlogs[0]._id
+        const blogToUpdate = await Blog.findById(blogToUpdateId).lean()
+        await api.put(`/api/blogs/${blogToUpdateId}`).send(blogToUpdate).expect(401)
+    })
+})
+
 
 after(async () => {
     await mongoose.connection.close()
