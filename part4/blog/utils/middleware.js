@@ -1,5 +1,8 @@
 const logger = require("./logger")
 const _  = require("lodash")
+const jwt = require("jsonwebtoken")
+const config = require("./config")
+const User = require("../models/user")
 
 const unknownEndpointHandler = (request, response) => {
     logger.info(request.path)
@@ -8,7 +11,6 @@ const unknownEndpointHandler = (request, response) => {
 
 const errorHandler = (error, request, response, next) => {
     logger.error(error)
-    console.log(error)
 
     if (error.name === "ValidationError") {
         return response.status(400).json({ error: `${_.join(Object.keys(error.errors))} invalid`})
@@ -27,8 +29,24 @@ const tokenExtractor = (request, response, next) => {
     next()
 }
 
+const userExtractor = async (request, response, next) => {
+    const token = request.token
+    if (token) {
+        const decodedToken = jwt.verify(token, config.SECRET)
+        const id = decodedToken.id
+        if (id) {
+            const user = await User.findById(id)
+            if (user) {
+                request.user = user
+            }
+        }
+    }
+    next()
+}
+
 module.exports = {
     unknownEndpointHandler,
     errorHandler,
     tokenExtractor,
+    userExtractor,
 }

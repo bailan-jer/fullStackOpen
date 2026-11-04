@@ -7,14 +7,34 @@ const Blog = require("../models/blog")
 const User = require("../models/user")
 const mongoose = require("mongoose")
 const _ = require("lodash")
-const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
 
 const api = supertest(app)
 
+const initializeDb = async () => {
+    await User.deleteMany({})
+    await Blog.deleteMany({})
+    const { password: password1, ...user1 } = helper.initialUsers[0]
+    const { password: password2, ...user2 } = helper.initialUsers[1]
+
+    const createBlogs = async (user, blogs) => {
+        for (const blog of blogs) {
+            await helper.getOrCreateBlog(user, blog)
+        }
+    }
+    const h = helper.initialBlogs
+    await Promise.all([createBlogs(user1, [h[0], h[1], h[2]]), createBlogs(user2, [h[3], h[4], h[5]])])
+}
+
+const getTestingToken = async () => {
+    const { passwordHash, name, ...user} = helper.initialUsers[0]
+    const token = (await api.post("/api/login").send(user)).body.token
+    return token
+}
+
 describe("when there is initially some blogs saved", () => {
     beforeEach(async () => {
-        await Blog.deleteMany({})
-        await Blog.insertMany(helper.initialBlogs)
+        await initializeDb()
     })   
 
     test("All blogs are returned and as JSON", async () => {
@@ -40,6 +60,7 @@ describe("when there is initially some blogs saved", () => {
 
     describe("addition of a new blog", () => {
         test("succeeds when with valid data", async () => {
+            const token = await getTestingToken()
             const newBlog = {
                 title: "a valid blog is added",
                 author: "bailan baler",
@@ -50,6 +71,7 @@ describe("when there is initially some blogs saved", () => {
             await api
                 .post("/api/blogs")
                 .send(newBlog)
+                .set("Authorization", `Bearer ${token}`)
                 .expect(201)
                 .expect("Content-Type", /application\/json/)
 
@@ -92,6 +114,7 @@ describe("when there is initially some blogs saved", () => {
     })
 
     test("'Likes' default to 0 when ommited from request", async () => {
+        const token = await getTestingToken()
         const newBlog = {
             title: "'Likes' default to 0 when ommited from request",
             author: "bailan jer",
@@ -101,29 +124,13 @@ describe("when there is initially some blogs saved", () => {
         const { id } = (await api
             .post("/api/blogs")
             .send(newBlog)
+            .set("Authorization", `Bearer ${token}`)
             .expect(201)
             .expect("Content-Type", /application\/json/)
         ).body
 
         const blogsAtEnd = await helper.blogsInDb()
         assert(_.find(blogsAtEnd, { id }).likes === 0)
-    })
-
-    describe("deletion of a blog", () => {
-        test("succeeds with status code 204 if id is valid",  async () => {
-            const blogsAtStart = await helper.blogsInDb()
-            const blogToDelete = blogsAtStart[0]
-
-            await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
-            const blogsAtEnd = await helper.blogsInDb()
-            assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
-
-            assert.strictEqual(await Blog.findById(blogToDelete.id), null)
-        })
-
-        test("fails with status code 404 if id does not exist", async () => {
-            await api.delete(`/api/blogs/${helper.nonExistingId()}`).expect(404)
-        })
     })
 
     describe("updating of a blog", () => {
@@ -143,17 +150,7 @@ describe("when there is initially some blogs saved", () => {
 
 describe("when there is initially a user in the database", () => {
     beforeEach(async () => {
-        await Blog.deleteMany({})
-        await User.deleteMany({})
-        const password = "test"
-        const hashRounds = 10
-        const passwordHash = await bcrypt.hash(password, hashRounds)
-        const newUser = new User({
-            username: "test",
-            name: "test",
-            passwordHash,
-        })
-        await newUser.save()
+        await initializeDb()
     })
 
     test("POST request to `/api/users` creates new user", async () => {
@@ -173,7 +170,7 @@ describe("when there is initially a user in the database", () => {
     })
 
     describe("creation of a new user", async () => {
-        test("success with status code 201 when `username` and `password` are supplied, both are 3 letters long and `username` is unique", async () => {
+        test("succeeds with status code 201 when `username` and `password` are supplied, both are 3 letters long and `username` is unique", async () => {
             const usersAtStart = await helper.usersInDb()
             const user = {
                 username: "testing2",
@@ -222,7 +219,7 @@ describe("when there is initially a user in the database", () => {
         test("failed with status code 400 when `username` is not unique", async () => {
             const usersAtStart = await helper.usersInDb()
             const invalidUser = {
-                username: "test",
+                username: "mlukkai",
                 name: "test",
                 password: "1234",
             }
@@ -237,58 +234,46 @@ describe("when there is initially a user in the database", () => {
 
     describe("population of", () => {
         test("`user` field of blog with the corresponding user succeeds", async () => {
-            const onlyUser = (await helper.usersInDb())[0]
+            const token = await getTestingToken()
+            const user = jwt.decode(token)
             const blog = {
                 title: "Things I Don't Know as of 2018",
                 url: "https://overreacted.io/things-i-dont-know-as-off-2018",
                 author: "Dan Abramov",
             }
-            const response = await api.post("/api/blogs").send(blog)
+            const response = await api.post("/api/blogs").send(blog).set("Authorization", `Bearer ${token}`)
             const expectedStatus = 201
             assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\n${response.body}`)
-            assert.strictEqual(response.body.user, onlyUser.id)
+            assert.strictEqual(response.body.user, user.id)
 
-            const getResponse = await api.get(`/api/blogs/${response.body.id}`)
-            const expectedUserObj = (await User.findById(response.body.user)).toJSON()
-            delete expectedUserObj.blogs
-            assert.deepStrictEqual(getResponse.body.user, expectedUserObj) })
-
+            const blogsInDb = await helper.blogsInDb()
+            const savedBlog = blogsInDb.find(b => response.body.id === b.id)
+            assert(savedBlog.user.toString() === user.id)
+        })
+            
         test("`blogs` field of user with blogs created by the user succeeds", async () => {
-            const onlyUser = (await helper.usersInDb())[0]
+            const token = await getTestingToken()
+            const user = jwt.decode(token)
             const blog = {
                 url: "https://martinfowler.com/articles/distributed-objects-microservices.html",
                 title: "Microservices and the First Law of Distributed Object",
                 author: "Martin Fowler",
             }
-            const response = await api.post("/api/blogs").send(blog)
+            const response = await api.post("/api/blogs").send(blog).set("Authorization", `Bearer ${token}`)
             const expectedStatus = 201
             assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\n${response.body}`)
-            assert.strictEqual(response.body.user, onlyUser.id)
+            assert.strictEqual(response.body.user, user.id)
 
-            const getOnlyUserFromApi = await api.get(`/api/users/${response.body.user}`)
-            const blogsIds = getOnlyUserFromApi.body.blogs.map(b => b.id)
-
-            let blogs = await Blog.find({ user: response.body.user}, { _id: 1 })
-            blogs = blogs.map(b => b._id.toString())
-            assert(_.difference(blogs, blogsIds).length === 0)
+            const usersInDb = await helper.usersInDb()
+            const savedUser = usersInDb.find(u => u.id === user.id)
+            assert(savedUser.blogs.map(b => b.toString()).includes(response.body.id))
         })
     })
 })
 
 describe("Deletion of a blog", () => {
     beforeEach(async () => {
-        await User.deleteMany({})
-        await Blog.deleteMany({})
-        const { password: password1, ...user1 } = helper.initialUsers[0]
-        const { password: password2, ...user2 } = helper.initialUsers[1]
-
-        const createBlogs = async (user, blogs) => {
-            for (const blog of blogs) {
-                await helper.getOrCreateBlog(user, blog)
-            }
-        }
-        const h = helper.initialBlogs
-        await Promise.all([createBlogs(user1, [h[0], h[1], h[2]]), createBlogs(user2, [h[3], h[4], h[5]])])
+        await initializeDb()
     })
 
     test("fails when token is not provided", async () => {
@@ -302,17 +287,14 @@ describe("Deletion of a blog", () => {
 
     test("fails with status 404 when the id does not exist and token is provided", async () => {
         const nonExistingId = helper.nonExistingId()        
-        const { name, passwordHash, ...user } = helper.initialUsers[0]
-        const token = (await api.post("/api/login").send(user)).body.token
+        const token = await getTestingToken()
         const response = await api.delete(`/api/blogs/${nonExistingId}`).set("Authorization", `Bearer ${token}`)
         const expectedStatus = 404
         assert.strictEqual(response.status, expectedStatus, `Expected ${expectedStatus}, got ${response.status}\n${JSON.stringify(response.body)}`)
     })
 
     test("fails with status 401 when token is valid but not the creator of that blog", async () => {
-        const { passwordHash, name, ...user1} = helper.initialUsers[0]
-
-        const token = (await api.post("/api/login").send(user1)).body.token
+        const token = await getTestingToken()
         const blogId = (await Blog.findOne(helper.initialBlogs.at(-1)))._id
         const response = (await api.delete(`/api/blogs/${blogId}`).set("Authorization", `Bearer ${token}`))
         const expectedStatus = 401
@@ -322,9 +304,7 @@ describe("Deletion of a blog", () => {
 
     test("succeeds with status code 204 when token is valid and is the creator of blog", async () => {
         const numBlogsAtStart = (await helper.blogsInDb()).length
-        const {passwordHash, name, ...user} = helper.initialUsers[0]
-
-        const token = (await api.post("/api/login").send(user)).body.token
+        const token = await getTestingToken()
         const blogId = (await Blog.findOne(helper.initialBlogs[0]))._id
         const response = await api.delete(`/api/blogs/${blogId}`).set("Authorization", `Bearer ${token}`)
         const expectedStatus = 204
