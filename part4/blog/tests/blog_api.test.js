@@ -58,61 +58,6 @@ describe("when there is initially some blogs saved", () => {
         assert(blogs.map(blog => !("_id" in blog)))
     })
 
-    describe("addition of a new blog", () => {
-        test("succeeds when with valid data", async () => {
-            const token = await getTestingToken()
-            const newBlog = {
-                title: "a valid blog is added",
-                author: "bailan baler",
-                url: "http://test",
-                likes: 10,
-            }
-
-            await api
-                .post("/api/blogs")
-                .send(newBlog)
-                .set("Authorization", `Bearer ${token}`)
-                .expect(201)
-                .expect("Content-Type", /application\/json/)
-
-            const blogsAtEnd = await helper.blogsInDb()
-            assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
-            assert(_.some(blogsAtEnd, newBlog))
-        })
-
-        test("fails with status code 404 if data lacks 'title' or 'url'", async () => {
-            const missingTitle = {
-                author: "bailan jer",
-                url: "http://test",
-            }
-            const missingUrl = {
-                title: "missing url",
-                author: "bailan jer",
-            }
-            const missingTitleAndUrl = {
-                author: "bailan jer"
-            }
-
-            await api
-                .post("/api/blogs")
-                .send(missingTitle)
-                .expect(400)
-
-            await api
-                .post("/api/blogs")
-                .send(missingUrl)
-                .expect(400)
-
-            await api
-                .post("/api/blogs")
-                .send(missingTitleAndUrl)
-                .expect(400)
-
-            const blogsAtEnd = await helper.blogsInDb()
-            assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
-        })
-    })
-
     test("'Likes' default to 0 when ommited from request", async () => {
         const token = await getTestingToken()
         const newBlog = {
@@ -312,6 +257,78 @@ describe("Deletion of a blog", () => {
 
         const numBlogsAtEnd = (await helper.blogsInDb()).length
         assert.strictEqual(numBlogsAtEnd, numBlogsAtStart - 1)
+    })
+})
+
+describe("addition of a new blog", () => {
+    beforeEach(async () => {
+        await initializeDb()
+    })
+
+    test("succeeds with status 201 when with valid data and valid token", async () => {
+        const token = await getTestingToken()
+        const newBlog = {
+            title: "a valid blog is added",
+            author: "bailan baler",
+            url: "http://test",
+            likes: 10,
+        }
+
+        await api
+            .post("/api/blogs")
+            .send(newBlog)
+            .set("Authorization", `Bearer ${token}`)
+            .expect(201)
+            .expect("Content-Type", /application\/json/)
+
+        const blogsAtEnd = await helper.blogsInDb()
+        assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
+        assert(_.some(blogsAtEnd, newBlog))
+    })
+
+    test("fails with status code 404 if data lacks 'title' or 'url'", async () => {
+        const missingTitle = {
+            author: "bailan jer",
+            url: "http://test",
+        }
+        const missingUrl = {
+            title: "missing url",
+            author: "bailan jer",
+        }
+        const missingTitleAndUrl = {
+            author: "bailan jer"
+        }
+
+        await api
+            .post("/api/blogs")
+            .send(missingTitle)
+            .expect(400)
+
+        await api
+            .post("/api/blogs")
+            .send(missingUrl)
+            .expect(400)
+
+        await api
+            .post("/api/blogs")
+            .send(missingTitleAndUrl)
+            .expect(400)
+
+        const blogsAtEnd = await helper.blogsInDb()
+        assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
+
+    test("fails with status 401 if token is not provided", async () => {
+        const blog = {
+            title: "token not provided",
+            author: "J. Madagascarj",
+            url: "http://local/j-madagascar",
+        }
+
+        const response = await api.post("/api/blogs").send(blog)
+        const expectedState = 401
+        assert.strictEqual(response.status, expectedState, `Expected ${expectedState}, got ${response.status}\n${JSON.stringify(response.body)}`)
+        assert(response.body.error.includes("Missing token"))
     })
 })
 
