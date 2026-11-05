@@ -18,6 +18,7 @@ const App = () => {
         event.preventDefault()
         try {
             const user = await loginService.login({ username, password })
+            blogService.setToken(user.token)
             window.localStorage.setItem("loggedBlogappUser", JSON.stringify(user))
             setUser(user)
             setUsername("")
@@ -32,6 +33,10 @@ const App = () => {
         setUser(null)
     }
 
+    const onBlogCreate = (newBlog) => {
+        setBlogs(blogs.concat(newBlog))
+    }
+
     if (user === null) {
         return <Login username = {username} 
                     password = {password}
@@ -41,7 +46,7 @@ const App = () => {
                 />
     }
 
-    return <Blogs blogs = {blogs} user = {user} onLogout = {onLogout} />;
+    return <Blogs blogs = {blogs} user = {user} onLogout = {onLogout} onBlogCreate = {onBlogCreate} />;
 };
 
 export default App;
