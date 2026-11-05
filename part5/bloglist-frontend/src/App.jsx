@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import Blog from "./components/Blog";
+import Blogs from "./components/Blogs"
+import Login from "./components/Login"
 import blogService from "./services/blogs";
 import loginService from "./services/login"
 
@@ -13,10 +14,11 @@ const App = () => {
         blogService.getAll().then((blogs) => setBlogs(blogs));
     }, []);
 
-    const handleLogin = async (event) => {
+    const onLogin = async (event) => {
         event.preventDefault()
         try {
             const user = await loginService.login({ username, password })
+            window.localStorage.setItem("loggedBlogappUser", JSON.stringify(user))
             setUser(user)
             setUsername("")
             setPassword("")
@@ -25,46 +27,21 @@ const App = () => {
         }
     }
 
-    if (user === null) {
-        return (
-            <div>
-                <h2>log in to application</h2>
-
-                <form onSubmit = {handleLogin}>
-                    <div>
-                        <label>
-                            username
-                            <input type = "text"
-                                value = {username}
-                                onChange = { ({target}) => setUsername(target.value) }
-                            />
-                        </label>
-                    </div>
-                    
-                    <div>
-                        <label>
-                            password
-                            <input type = "password"
-                                value = {password}
-                                onChange = { ({target}) => setPassword(target.value) }
-                            />
-                        </label>
-                    </div>
-                    <button type = "submit">Login</button>
-                </form>
-            </div>
-        )
+    const onLogout = () => {
+        window.localStorage.removeItem("loggedBlogappUser")
+        setUser(null)
     }
 
-    return (
-        <div>
-            <h2>blogs</h2>
-            <p>{user.username} logged in</p>
-            {blogs.map((blog) => (
-                <Blog key={blog.id} blog={blog} />
-            ))}
-        </div>
-    );
+    if (user === null) {
+        return <Login username = {username} 
+                    password = {password}
+                    onPasswordChange = {({target}) => setPassword(target.value) }
+                    onUsernameChange = { ({target}) => setUsername(target.value) }
+                    onLogin = {onLogin}
+                />
+    }
+
+    return <Blogs blogs = {blogs} user = {user} onLogout = {onLogout} />;
 };
 
 export default App;
