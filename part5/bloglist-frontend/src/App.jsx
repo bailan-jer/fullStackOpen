@@ -60,14 +60,17 @@ const App = () => {
         setUser(null);
     };
 
-    const onBlogCreate = (newBlog) => {
-        setBlogs(blogs.concat(newBlog));
-        blogFormRef.current.toggleVisibility()
-        setNotification({
-            message: `a new blog ${newBlog.title} by ${newBlog.author} added`,
-            error: false,
-        });
-        setTimeout(() => setNotification({ message: null, error: true }), 5000);
+    const createBlog = async(blogObject) => {
+        try {
+            const createdBlog = await blogService.create(blogObject)
+            setBlogs(blogs.concat(createdBlog))
+            setNotification({ message: `a new blog ${createdBlog.title} by ${createdBlog.author} added`, error: false })
+            blogFormRef.current.toggleVisibility()
+        } catch {
+            setNotification({ message: "error when creating new blog", error: true })
+        } finally {
+            setTimeout(() => { setNotification({ message: null, error: true }) }, 5000)
+        }
     };
 
     if (user === null) {
@@ -97,8 +100,7 @@ const App = () => {
 
             <Toggleable buttonLabel="create new blog" ref = {blogFormRef}>
                 <BlogForm
-                    onBlogCreate={onBlogCreate}
-                    setNotification={setNotification}
+                    createBlog = {createBlog}
                 />
             </Toggleable>
             <Blogs blogs={blogs} />
