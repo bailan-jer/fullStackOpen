@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Blogs from "./components/Blogs";
 import Login from "./components/Login";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
 import Notification from "./components/Notification";
+import Toggleable from "./components/Toggleable";
+import BlogForm from "./components/BlogForm";
 
 const App = () => {
     const [blogs, setBlogs] = useState([]);
@@ -14,19 +16,20 @@ const App = () => {
         message: null,
         error: true,
     });
+    const blogFormRef = useRef()
 
     useEffect(() => {
         blogService.getAll().then((blogs) => setBlogs(blogs));
     }, []);
 
     useEffect(() => {
-        const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser")
+        const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser");
         if (loggedUserJSON) {
-            const user = JSON.parse(loggedUserJSON)
-            setUser(user)
-            blogService.setToken(user.token)
+            const user = JSON.parse(loggedUserJSON);
+            setUser(user);
+            blogService.setToken(user.token);
         }
-    }, [])
+    }, []);
 
     const onLogin = async (event) => {
         event.preventDefault();
@@ -59,6 +62,7 @@ const App = () => {
 
     const onBlogCreate = (newBlog) => {
         setBlogs(blogs.concat(newBlog));
+        blogFormRef.current.toggleVisibility()
         setNotification({
             message: `a new blog ${newBlog.title} by ${newBlog.author} added`,
             error: false,
@@ -69,7 +73,7 @@ const App = () => {
     if (user === null) {
         return (
             <div>
-                <Notification notification = {notification} />
+                <Notification notification={notification} />
                 <Login
                     username={username}
                     password={password}
@@ -84,12 +88,20 @@ const App = () => {
     return (
         <div>
             <Notification notification={notification} />
-            <Blogs
-                blogs={blogs}
-                user={user}
-                onLogout={onLogout}
-                onBlogCreate={onBlogCreate}
-            />
+
+            <h2>Blogs</h2>
+            <p>
+                {user.username} logged in
+                <button onClick={onLogout}>logout</button>
+            </p>
+
+            <Toggleable buttonLabel="create new blog" ref = {blogFormRef}>
+                <BlogForm
+                    onBlogCreate={onBlogCreate}
+                    setNotification={setNotification}
+                />
+            </Toggleable>
+            <Blogs blogs={blogs} />
         </div>
     );
 };
