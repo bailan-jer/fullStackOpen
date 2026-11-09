@@ -20,7 +20,7 @@ const App = () => {
     const blogFormRef = useRef();
 
     useEffect(() => {
-        blogService.getAll().then((blogs) => setBlogs(lodash.orderBy(blogs)));
+        blogService.getAll().then((blogs) => setBlogs(lodash.orderBy(blogs, ["likes"], ["asc"])));
     }, []);
 
     useEffect(() => {
@@ -64,7 +64,7 @@ const App = () => {
     const createBlog = async (blogObject) => {
         try {
             const createdBlog = await blogService.create(blogObject);
-            setBlogs(blogs.concat(createdBlog));
+            setBlogs(lodash.orderBy(blogs.concat(createdBlog), ["likes"], ["asc"]));
             setNotification({
                 message: `a new blog ${createdBlog.title} by ${createdBlog.author} added`,
                 error: false,

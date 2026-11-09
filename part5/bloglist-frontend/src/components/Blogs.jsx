@@ -1,12 +1,13 @@
 import Blog from "./Blog";
+import lodash from "lodash"
 
 const Blogs = ({ blogs, setBlogs }) => {
     const updateBlogs = (incrementedBlog) => {
-        setBlogs(
-            blogs.map((b) =>
-                b.id === incrementedBlog.id ? incrementedBlog : b,
-            ),
-        );
+        setBlogs(lodash.orderBy(
+                blogs.map((b) =>
+                    b.id === incrementedBlog.id ? incrementedBlog : b,
+                ), ["likes"], ["asc"]
+        ));
     };
 
     return (
