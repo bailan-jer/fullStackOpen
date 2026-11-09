@@ -1,7 +1,7 @@
 import { useState } from "react";
 import blogService from "../services/blogs";
 
-const Blog = ({ blog, updateBlogs }) => {
+const Blog = ({ blog, updateBlogs, deleteBlog, user }) => {
     const [detailsVisible, setDetailsVisible] = useState(false);
 
     const blogStyle = {
@@ -27,6 +27,21 @@ const Blog = ({ blog, updateBlogs }) => {
         updateBlogs(incrementedBlog);
     };
 
+    const handleDelete = async () => {
+        if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
+            try {
+                await blogService.del(blog.id)
+                deleteBlog(blog.id)
+            } catch {
+                console.log("error deleting")
+            }
+        }
+    }
+
+    const deleteButtonStyle = {
+        backgroundColor: "#757de8",
+    }
+
     const detail = () => {
         if (!detailsVisible) return null;
         return (
@@ -36,6 +51,8 @@ const Blog = ({ blog, updateBlogs }) => {
                 {blog.likes} <button onClick={incrementLike}>Like</button>
                 <br />
                 {blog.user.name}
+                <br />
+                { user.id === blog.user.id.toString() ? <button style = {deleteButtonStyle} onClick = {handleDelete}>delete</button> : null}
             </div>
         );
     };

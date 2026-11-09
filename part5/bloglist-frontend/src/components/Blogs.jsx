@@ -1,19 +1,33 @@
 import Blog from "./Blog";
-import lodash from "lodash"
+import lodash from "lodash";
 
-const Blogs = ({ blogs, setBlogs }) => {
+const Blogs = ({ blogs, setBlogs, user }) => {
     const updateBlogs = (incrementedBlog) => {
-        setBlogs(lodash.orderBy(
+        setBlogs(
+            lodash.orderBy(
                 blogs.map((b) =>
                     b.id === incrementedBlog.id ? incrementedBlog : b,
-                ), ["likes"], ["asc"]
-        ));
+                ),
+                ["likes"],
+                ["asc"],
+            ),
+        );
+    };
+
+    const deleteBlog = (deletedBlogId) => {
+        setBlogs(blogs.filter((b) => b.id !== deletedBlogId));
     };
 
     return (
         <div>
             {blogs.map((b) => (
-                <Blog key={b.id} blog={b} updateBlogs={updateBlogs} />
+                <Blog
+                    key={b.id}
+                    blog={b}
+                    updateBlogs={updateBlogs}
+                    deleteBlog={deleteBlog}
+                    user = {user}
+                />
             ))}
         </div>
     );
