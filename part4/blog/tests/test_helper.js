@@ -1,7 +1,7 @@
-const Blog = require("../models/blog")
-const User = require("../models/user")
-const saltRounds = 10
-const bcrypt = require("bcrypt")
+const Blog = require("../models/blog");
+const User = require("../models/user");
+const saltRounds = 10;
+const bcrypt = require("bcrypt");
 
 const initialBlogs = [
     {
@@ -10,7 +10,7 @@ const initialBlogs = [
         author: "Michael Chan",
         url: "https://reactpatterns.com/",
         likes: 7,
-        __v: 0
+        __v: 0,
     },
     {
         _id: "5a422aa71b54a676234d17f8",
@@ -18,7 +18,7 @@ const initialBlogs = [
         author: "Edsger W. Dijkstra",
         url: "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html",
         likes: 5,
-        __v: 0
+        __v: 0,
     },
     {
         _id: "5a422b3a1b54a676234d17f9",
@@ -26,7 +26,7 @@ const initialBlogs = [
         author: "Edsger W. Dijkstra",
         url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
         likes: 12,
-        __v: 0
+        __v: 0,
     },
     {
         _id: "5a422b891b54a676234d17fa",
@@ -34,7 +34,7 @@ const initialBlogs = [
         author: "Robert C. Martin",
         url: "http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll",
         likes: 10,
-        __v: 0
+        __v: 0,
     },
     {
         _id: "5a422ba71b54a676234d17fb",
@@ -42,7 +42,7 @@ const initialBlogs = [
         author: "Robert C. Martin",
         url: "http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html",
         likes: 0,
-        __v: 0
+        __v: 0,
     },
     {
         _id: "5a422bc61b54a676234d17fc",
@@ -50,68 +50,66 @@ const initialBlogs = [
         author: "Robert C. Martin",
         url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
         likes: 2,
-        __v: 0
-    }  
-]
+        __v: 0,
+    },
+];
 
 const initialUsers = [
     {
-        "username": "mlukkai",
-        "name": "Matti Luukkainen",
-        "password": "123456",
-        "passwordHash": bcrypt.hashSync("123456", saltRounds)
+        username: "mlukkai",
+        name: "Matti Luukkainen",
+        password: "123456",
+        passwordHash: bcrypt.hashSync("123456", saltRounds),
     },
     {
-        "username": "bailan jer",
-        "name": "wong hong",
-        "password": "741963",
-        "password": bcrypt.hashSync("741963", saltRounds)
+        username: "bailan jer",
+        name: "wong hong",
+        password: "741963",
+        password: bcrypt.hashSync("741963", saltRounds),
     },
-]
+];
 
 const blogsInDb = async () => {
-    const blogs = await Blog.find({}) 
-    return blogs.map(blog => blog.toJSON())
-}
+    const blogs = await Blog.find({});
+    return blogs.map((blog) => blog.toJSON());
+};
 
 const usersInDb = async () => {
-    const users = await User.find({})
-    const mappedUser = users.map(u => u.toJSON())
-    return mappedUser
-}
+    const users = await User.find({});
+    const mappedUser = users.map((u) => u.toJSON());
+    return mappedUser;
+};
 
 const nonExistingId = () => {
     const blog = new Blog({
         title: "for delete",
         url: "http://delete",
-    })
-    return blog._id
-}
+    });
+    return blog._id;
+};
 
 const getOrCreateUser = async (user) => {
-    user = await User.findOneAndUpdate({ username: user.username }, user,
-        {
-            upsert: true,
-            returnDocument: "after",
-            setsDefaultOnInsert: true
-        }
-    )
-    return user
-}
+    user = await User.findOneAndUpdate({ username: user.username }, user, {
+        upsert: true,
+        returnDocument: "after",
+        setsDefaultOnInsert: true,
+    });
+    return user;
+};
 
 const getOrCreateBlog = async (user, blog) => {
     try {
-        user = await getOrCreateUser(user)
-        blog = new Blog({ ...blog, user: user._id })
-        await blog.save()
-        user.blogs = user.blogs.concat(blog._id)
-        await user.save()
-        return blog
-    } catch(err) {
-        console.log(err)
-        console.error("Error while creating user and/or blog")
+        user = await getOrCreateUser(user);
+        blog = new Blog({ ...blog, user: user._id });
+        await blog.save();
+        user.blogs = user.blogs.concat(blog._id);
+        await user.save();
+        return blog;
+    } catch (err) {
+        console.log(err);
+        console.error("Error while creating user and/or blog");
     }
-}
+};
 
 module.exports = {
     initialBlogs,
@@ -121,4 +119,4 @@ module.exports = {
     usersInDb,
     getOrCreateUser,
     getOrCreateBlog,
-}
+};
