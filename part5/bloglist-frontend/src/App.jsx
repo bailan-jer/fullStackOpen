@@ -6,6 +6,7 @@ import loginService from "./services/login";
 import Notification from "./components/Notification";
 import Toggleable from "./components/Toggleable";
 import BlogForm from "./components/BlogForm";
+import lodash from "lodash";
 
 const App = () => {
     const [blogs, setBlogs] = useState([]);
@@ -16,10 +17,10 @@ const App = () => {
         message: null,
         error: true,
     });
-    const blogFormRef = useRef()
+    const blogFormRef = useRef();
 
     useEffect(() => {
-        blogService.getAll().then((blogs) => setBlogs(blogs));
+        blogService.getAll().then((blogs) => setBlogs(lodash.orderBy(blogs)));
     }, []);
 
     useEffect(() => {
@@ -60,16 +61,24 @@ const App = () => {
         setUser(null);
     };
 
-    const createBlog = async(blogObject) => {
+    const createBlog = async (blogObject) => {
         try {
-            const createdBlog = await blogService.create(blogObject)
-            setBlogs(blogs.concat(createdBlog))
-            setNotification({ message: `a new blog ${createdBlog.title} by ${createdBlog.author} added`, error: false })
-            blogFormRef.current.toggleVisibility()
+            const createdBlog = await blogService.create(blogObject);
+            setBlogs(blogs.concat(createdBlog));
+            setNotification({
+                message: `a new blog ${createdBlog.title} by ${createdBlog.author} added`,
+                error: false,
+            });
+            blogFormRef.current.toggleVisibility();
         } catch {
-            setNotification({ message: "error when creating new blog", error: true })
+            setNotification({
+                message: "error when creating new blog",
+                error: true,
+            });
         } finally {
-            setTimeout(() => { setNotification({ message: null, error: true }) }, 5000)
+            setTimeout(() => {
+                setNotification({ message: null, error: true });
+            }, 5000);
         }
     };
 
@@ -98,12 +107,10 @@ const App = () => {
                 <button onClick={onLogout}>logout</button>
             </p>
 
-            <Toggleable buttonLabel="create new blog" ref = {blogFormRef}>
-                <BlogForm
-                    createBlog = {createBlog}
-                />
+            <Toggleable buttonLabel="create new blog" ref={blogFormRef}>
+                <BlogForm createBlog={createBlog} />
             </Toggleable>
-            <Blogs blogs={blogs} setBlogs = {setBlogs} />
+            <Blogs blogs={blogs} setBlogs={setBlogs} />
         </div>
     );
 };
