@@ -103,7 +103,7 @@ const App = () => {
                     createBlog = {createBlog}
                 />
             </Toggleable>
-            <Blogs blogs={blogs} />
+            <Blogs blogs={blogs} setBlogs = {setBlogs} />
         </div>
     );
 };
