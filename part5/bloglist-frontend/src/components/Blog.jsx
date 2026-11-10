@@ -1,8 +1,8 @@
-import { useState } from "react";
-import blogService from "../services/blogs";
+import { useState } from "react"
+import blogService from "../services/blogs"
 
 const Blog = ({ blog, updateBlogs, deleteBlog, user }) => {
-    const [detailsVisible, setDetailsVisible] = useState(false);
+    const [detailsVisible, setDetailsVisible] = useState(false)
 
     const blogStyle = {
         paddingTop: 10,
@@ -10,10 +10,10 @@ const Blog = ({ blog, updateBlogs, deleteBlog, user }) => {
         border: "solid",
         borderWidth: 1,
         marginBottom: 5,
-    };
+    }
 
     const incrementLike = async (event) => {
-        event.preventDefault();
+        event.preventDefault()
         const incrementedBlog = await blogService.update(
             {
                 title: blog.title,
@@ -23,9 +23,9 @@ const Blog = ({ blog, updateBlogs, deleteBlog, user }) => {
                 likes: blog.likes + 1,
             },
             blog.id,
-        );
-        updateBlogs(incrementedBlog);
-    };
+        )
+        updateBlogs(incrementedBlog)
+    }
 
     const handleDelete = async () => {
         if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
@@ -43,7 +43,7 @@ const Blog = ({ blog, updateBlogs, deleteBlog, user }) => {
     }
 
     const detail = () => {
-        if (!detailsVisible) return null;
+        if (!detailsVisible) return null
         return (
             <div>
                 {blog.url}
@@ -54,8 +54,8 @@ const Blog = ({ blog, updateBlogs, deleteBlog, user }) => {
                 <br />
                 { user.id === blog.user.id.toString() ? <button style = {deleteButtonStyle} onClick = {handleDelete}>delete</button> : null}
             </div>
-        );
-    };
+        )
+    }
 
     return (
         <div style={blogStyle}>
@@ -63,7 +63,7 @@ const Blog = ({ blog, updateBlogs, deleteBlog, user }) => {
                 {blog.title} {blog.author}
                 <button
                     onClick={() => {
-                        setDetailsVisible(!detailsVisible);
+                        setDetailsVisible(!detailsVisible)
                     }}
                 >
                     {detailsVisible ? "hide" : "show"}
@@ -71,7 +71,7 @@ const Blog = ({ blog, updateBlogs, deleteBlog, user }) => {
             </div>
             {detail()}
         </div>
-    );
-};
+    )
+}
 
-export default Blog;
+export default Blog

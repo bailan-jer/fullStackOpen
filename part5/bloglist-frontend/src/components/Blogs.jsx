@@ -1,5 +1,5 @@
-import Blog from "./Blog";
-import lodash from "lodash";
+import Blog from "./Blog"
+import lodash from "lodash"
 
 const Blogs = ({ blogs, setBlogs, user }) => {
     const updateBlogs = (incrementedBlog) => {
@@ -11,12 +11,12 @@ const Blogs = ({ blogs, setBlogs, user }) => {
                 ["likes"],
                 ["asc"],
             ),
-        );
-    };
+        )
+    }
 
     const deleteBlog = (deletedBlogId) => {
-        setBlogs(blogs.filter((b) => b.id !== deletedBlogId));
-    };
+        setBlogs(blogs.filter((b) => b.id !== deletedBlogId))
+    }
 
     return (
         <div>
@@ -30,7 +30,7 @@ const Blogs = ({ blogs, setBlogs, user }) => {
                 />
             ))}
         </div>
-    );
-};
+    )
+}
 
-export default Blogs;
+export default Blogs

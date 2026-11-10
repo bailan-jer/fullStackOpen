@@ -1,86 +1,86 @@
-import { useState, useEffect, useRef } from "react";
-import Blogs from "./components/Blogs";
-import Login from "./components/Login";
-import blogService from "./services/blogs";
-import loginService from "./services/login";
-import Notification from "./components/Notification";
-import Toggleable from "./components/Toggleable";
-import BlogForm from "./components/BlogForm";
-import lodash from "lodash";
+import { useState, useEffect, useRef } from "react"
+import Blogs from "./components/Blogs"
+import Login from "./components/Login"
+import blogService from "./services/blogs"
+import loginService from "./services/login"
+import Notification from "./components/Notification"
+import Toggleable from "./components/Toggleable"
+import BlogForm from "./components/BlogForm"
+import lodash from "lodash"
 
 const App = () => {
-    const [blogs, setBlogs] = useState([]);
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [user, setUser] = useState(null);
+    const [blogs, setBlogs] = useState([])
+    const [username, setUsername] = useState("")
+    const [password, setPassword] = useState("")
+    const [user, setUser] = useState(null)
     const [notification, setNotification] = useState({
         message: null,
         error: true,
-    });
-    const blogFormRef = useRef();
+    })
+    const blogFormRef = useRef()
 
     useEffect(() => {
-        blogService.getAll().then((blogs) => setBlogs(lodash.orderBy(blogs, ["likes"], ["asc"])));
-    }, []);
+        blogService.getAll().then((blogs) => setBlogs(lodash.orderBy(blogs, ["likes"], ["asc"])))
+    }, [])
 
     useEffect(() => {
-        const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser");
+        const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser")
         if (loggedUserJSON) {
-            const user = JSON.parse(loggedUserJSON);
-            setUser(user);
-            blogService.setToken(user.token);
+            const user = JSON.parse(loggedUserJSON)
+            setUser(user)
+            blogService.setToken(user.token)
         }
-    }, []);
+    }, [])
 
     const onLogin = async (event) => {
-        event.preventDefault();
+        event.preventDefault()
         try {
-            const user = await loginService.login({ username, password });
-            blogService.setToken(user.token);
+            const user = await loginService.login({ username, password })
+            blogService.setToken(user.token)
             window.localStorage.setItem(
                 "loggedBlogappUser",
                 JSON.stringify(user),
-            );
-            setUser(user);
-            setUsername("");
-            setPassword("");
+            )
+            setUser(user)
+            setUsername("")
+            setPassword("")
         } catch {
             setNotification({
                 message: "wrong username or password",
                 error: true,
-            });
+            })
             setTimeout(
                 () => setNotification({ message: null, error: true }),
                 5000,
-            );
+            )
         }
-    };
+    }
 
     const onLogout = () => {
-        window.localStorage.removeItem("loggedBlogappUser");
-        setUser(null);
-    };
+        window.localStorage.removeItem("loggedBlogappUser")
+        setUser(null)
+    }
 
     const createBlog = async (blogObject) => {
         try {
-            const createdBlog = await blogService.create(blogObject);
-            setBlogs(lodash.orderBy(blogs.concat(createdBlog), ["likes"], ["asc"]));
+            const createdBlog = await blogService.create(blogObject)
+            setBlogs(lodash.orderBy(blogs.concat(createdBlog), ["likes"], ["asc"]))
             setNotification({
                 message: `a new blog ${createdBlog.title} by ${createdBlog.author} added`,
                 error: false,
-            });
-            blogFormRef.current.toggleVisibility();
+            })
+            blogFormRef.current.toggleVisibility()
         } catch {
             setNotification({
                 message: "error when creating new blog",
                 error: true,
-            });
+            })
         } finally {
             setTimeout(() => {
-                setNotification({ message: null, error: true });
-            }, 5000);
+                setNotification({ message: null, error: true })
+            }, 5000)
         }
-    };
+    }
 
     if (user === null) {
         return (
@@ -94,7 +94,7 @@ const App = () => {
                     onLogin={onLogin}
                 />
             </div>
-        );
+        )
     }
 
     return (
@@ -112,7 +112,7 @@ const App = () => {
             </Toggleable>
             <Blogs blogs={blogs} setBlogs={setBlogs} user = {user} />
         </div>
-    );
-};
+    )
+}
 
-export default App;
+export default App
