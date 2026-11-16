@@ -1,8 +1,7 @@
 import { useState } from "react"
-import blogService from "../services/blogs"
 
-const Blog = ({ blog, updateBlogs, deleteBlog, user }) => {
-    const [detailsVisible, setDetailsVisible] = useState(false)
+const Blog = ({ blog, deleteBlog, user, incrementLike }) => {
+    const [detailsVisible, setDetailVisible] = useState(false)
 
     const blogStyle = {
         paddingTop: 10,
@@ -12,31 +11,17 @@ const Blog = ({ blog, updateBlogs, deleteBlog, user }) => {
         marginBottom: 5,
     }
 
-    const incrementLike = async (event) => {
-        event.preventDefault()
-        const incrementedBlog = await blogService.update(
-            {
-                title: blog.title,
-                url: blog.url,
-                author: blog.author,
-                user: blog.user.id,
-                likes: blog.likes + 1,
-            },
-            blog.id,
-        )
-        updateBlogs(incrementedBlog)
+    const onDelete = async () => {
+        deleteBlog(blog)
     }
 
-    const handleDelete = async () => {
-        if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-            try {
-                await blogService.del(blog.id)
-                deleteBlog(blog.id)
-            } catch {
-                console.log("error deleting")
-            }
-        }
-    }
+    const onLikeClicked = async () => {
+        await incrementLike({
+            ...blog,
+            likes: blog.likes + 1,
+            user: blog.user.id,
+        })
+   }
 
     const deleteButtonStyle = {
         backgroundColor: "#757de8",
@@ -48,11 +33,11 @@ const Blog = ({ blog, updateBlogs, deleteBlog, user }) => {
             <div>
                 {blog.url}
                 <br />
-                {blog.likes} <button onClick={incrementLike}>Like</button>
+                {blog.likes} <button onClick={onLikeClicked}>Like</button>
                 <br />
                 {blog.user.name}
                 <br />
-                { user.id === blog.user.id.toString() ? <button style = {deleteButtonStyle} onClick = {handleDelete}>delete</button> : null}
+                { user.id === blog.user.id ? <button style = {deleteButtonStyle} onClick = { onDelete }>delete</button> : null}
             </div>
         )
     }
@@ -63,7 +48,7 @@ const Blog = ({ blog, updateBlogs, deleteBlog, user }) => {
                 {blog.title} {blog.author}
                 <button
                     onClick={() => {
-                        setDetailsVisible(!detailsVisible)
+                        setDetailVisible(!detailsVisible)
                     }}
                 >
                     {detailsVisible ? "hide" : "show"}
